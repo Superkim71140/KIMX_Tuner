@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>KIMX Fuel - คำนวณอัตราสิ้นเปลือง</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { 
+            --bg: #050505; 
+            --card-bg: #111; 
+            --eco-green: #00ff66;
+            --orange-shopee: #ee4d2d;
+            --text: #ffffff; 
+            --border: #333; 
+        }
+
+        body {
+            font-family: 'Kanit', sans-serif; 
+            background-color: var(--bg); 
+            color: var(--text); 
+            margin: 0; padding: 15px;
+            background-image: linear-gradient(rgba(0,0,0,0.92), rgba(0,0,0,0.92)), url('https://www.transparenttextures.com/patterns/carbon-fibre.png');
+            background-attachment: fixed;
+            -webkit-tap-highlight-color: transparent;
+            overflow-x: hidden; /* Prevent horizontal scroll during loading transition */
+        }
+        
+        .container { max-width: 500px; margin: 0 auto; padding-bottom: 80px; margin-top: 70px; }
+
+        /* --- NEW: LOADING SCREEN --- */
+        #kimx-loader {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #050505; z-index: 99999;
+            display: flex; justify-content: center; align-items: center;
+            transition: opacity 0.6s ease-out, visibility 0.6s ease-out;
+        }
+        #kimx-loader.loaded {
+            opacity: 0; visibility: hidden; pointer-events: none;
+        }
+        .loader-content { text-align: center; }
+        .loader-logo {
+            font-size: 3rem; font-weight: 900; color: #fff; font-style: italic;
+            margin-bottom: 25px; text-transform: uppercase;
+            animation: pulseLogo 1.5s infinite alternate;
+            text-shadow: 0 0 20px rgba(0, 255, 102, 0.3);
+        }
+        .loader-spinner {
+            width: 50px; height: 50px; border: 5px solid rgba(0, 255, 102, 0.2);
+            border-top: 5px solid var(--eco-green); border-radius: 50%;
+            animation: spin 1s linear infinite; margin: 0 auto 20px;
+        }
+        .loader-text { color: #888; letter-spacing: 3px; font-size: 0.9rem; font-weight: bold; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes pulseLogo { from { transform: scale(1); opacity: 0.9; } to { transform: scale(1.05); opacity: 1; } }
+
+        /* NAV BAR */
+        .top-nav {
+            position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
+            background: rgba(0,0,0,0.95); border-bottom: 1px solid #333;
+            padding: 10px 0; display: flex; justify-content: center;
+            backdrop-filter: blur(10px);
+        }
+        .nav-link {
+            text-decoration: none; color: #fff; font-size: 1rem; font-weight: bold;
+            display: flex; align-items: center; gap: 8px;
+            padding: 8px 20px; border-radius: 50px; background: #222; border: 1px solid #444;
+        }
+
+        /* HEADER */
+        .header-box { text-align: center; margin-bottom: 25px; }
+        h1 { margin: 0; font-size: 1.8rem; line-height: 1.2; }
+        .eco-text { color: var(--eco-green); font-weight: 900; text-shadow: 0 0 15px rgba(0, 255, 102, 0.4); }
+        .sub-head { color: #888; font-size: 0.9rem; margin-top: 5px; }
+
+        /* INPUT CARD */
+        .input-card { background: #151515; padding: 20px; border-radius: 20px; border: 1px solid #333; margin-bottom: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        
+        .input-row { margin-bottom: 20px; position: relative; }
+        .input-row label { display: flex; justify-content: space-between; color: #aaa; margin-bottom: 8px; font-size: 0.95rem; }
+        
+        .input-wrapper { position: relative; }
+        .input-wrapper i { position: absolute; top: 50%; left: 15px; transform: translateY(-50%); color: var(--eco-green); font-size: 1.2rem; }
+        .input-wrapper input { 
+            width: 100%; padding: 15px 15px 15px 45px; background: #000; border: 1px solid #444; 
+            color: #fff; border-radius: 12px; font-family: 'Kanit'; font-size: 1.4rem; font-weight: bold;
+            box-sizing: border-box; transition: 0.3s;
+        }
+        .input-wrapper input:focus { border-color: var(--eco-green); outline: none; box-shadow: 0 0 15px rgba(0, 255, 102, 0.2); }
+        .unit-badge { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: #666; font-size: 0.9rem; }
+
+        /* QUICK PRICE BTNS */
+        .quick-price { display: flex; gap: 8px; margin-top: 10px; overflow-x: auto; padding-bottom: 5px; }
+        .qp-btn { 
+            background: #222; border: 1px solid #444; color: #ccc; padding: 6px 12px; 
+            border-radius: 8px; font-size: 0.8rem; white-space: nowrap; cursor: pointer; flex: 1;
+        }
+        .qp-btn.active { background: var(--eco-green); color: #000; font-weight: bold; border-color: var(--eco-green); }
+
+        /* DASHBOARD & GAUGE */
+        .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 25px; }
+        
+        .gauge-card {
+            grid-column: span 2;
+            background: linear-gradient(180deg, rgba(0, 255, 102, 0.05) 0%, #000 100%);
+            border: 1px solid #333; border-radius: 20px; padding: 25px 15px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            position: relative; overflow: hidden;
+        }
+        .gauge-ring {
+            width: 180px; height: 180px; border-radius: 50%;
+            background: conic-gradient(var(--eco-green) 0% 0%, #333 0% 100%);
+            display: flex; align-items: center; justify-content: center;
+            position: relative; transition: background 0.5s ease;
+            box-shadow: 0 0 30px rgba(0, 255, 102, 0.1);
+        }
+        .gauge-inner {
+            width: 160px; height: 160px; background: #080808; border-radius: 50%;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 2;
+        }
+        .gauge-val { font-size: 3.5rem; font-weight: 900; color: #fff; line-height: 0.9; }
+        .gauge-unit { font-size: 0.9rem; color: #888; }
+        .gauge-rating { 
+            margin-top: 15px; padding: 5px 15px; border-radius: 15px; 
+            font-size: 0.9rem; font-weight: bold; color: #000; background: #333; color:#aaa;
+            transition: 0.3s;
+        }
+
+        .stat-card { 
+            background: var(--card-bg); border: 1px solid var(--border); border-radius: 15px; 
+            padding: 15px; text-align: center;
+        }
+        .stat-value-sm { font-size: 1.8rem; font-weight: 800; color: #fff; line-height: 1; }
+        .stat-label { font-size: 0.8rem; color: #888; margin-top: 5px; }
+
+        /* --- PRODUCT CARD (Moved to bottom) --- */
+        .product-promo {
+            margin-top: 40px; /* เพิ่มระยะห่างด้านบน */
+            margin-bottom: 25px; padding: 25px 20px; border-radius: 25px;
+            background: linear-gradient(135deg, #220a00 0%, #111 100%); /* พื้นหลังเข้มขึ้น */
+            border: 2px solid var(--orange-shopee); position: relative;
+            text-align: center; overflow: hidden; box-shadow: 0 10px 30px rgba(238, 77, 45, 0.15);
+        }
+        .promo-badge {
+            position: absolute; top: 0; left: 50%; transform: translateX(-50%); background: var(--orange-shopee);
+            color: #fff; font-size: 0.8rem; font-weight: bold; padding: 5px 20px;
+            border-bottom-right-radius: 15px; border-bottom-left-radius: 15px;
+            box-shadow: 0 5px 15px rgba(238, 77, 45, 0.3);
+        }
+        .promo-icon-box {
+            font-size: 3.5rem; margin: 25px 0 15px;
+            background: linear-gradient(45deg, var(--orange-shopee), #ff6644);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 10px rgba(238, 77, 45, 0.5));
+        }
+        .promo-title { font-size: 1.4rem; color: #fff; margin-bottom: 10px; font-weight: 900; text-transform: uppercase; }
+        .promo-desc { color: #ccc; font-size: 1rem; margin-bottom: 25px; line-height: 1.5; }
+        .promo-btn {
+            background: linear-gradient(to right, var(--orange-shopee), #ff6644); color: #fff; text-decoration: none;
+            padding: 15px 35px; border-radius: 50px; font-weight: 800; font-size: 1.1rem;
+            display: inline-flex; align-items: center; gap: 10px; transition: 0.3s;
+            box-shadow: 0 5px 20px rgba(238, 77, 45, 0.4);
+            animation: pulseBtn 2s infinite;
+        }
+        .promo-btn:hover { transform: scale(1.05) translateY(-3px); box-shadow: 0 10px 25px rgba(238, 77, 45, 0.6); }
+        @keyframes pulseBtn { 0% { transform: scale(1); } 50% { transform: scale(1.03); } 100% { transform: scale(1); } }
+
+        /* BUTTONS */
+        .btn-action { 
+            width: 100%; padding: 18px; border: none; border-radius: 15px; 
+            font-size: 1.2rem; font-weight: 800; cursor: pointer; transition: 0.2s; 
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3); margin-bottom: 15px;
+        }
+        .btn-save { background: linear-gradient(45deg, #00ff66, #00cc44); color: #000; }
+
+        /* SUMMARY */
+        .summary-box { background: linear-gradient(135deg, #1a1a1a 0%, #0d0d0d 100%); border-radius: 15px; padding: 20px; border: 1px solid #333; }
+        .sum-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 10px; }
+        .sum-item { background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; }
+        .sum-val { font-size: 1.2rem; font-weight: bold; color: #fff; }
+        .sum-lbl { font-size: 0.75rem; color: #888; }
+
+        /* HISTORY */
+        .history-list { list-style: none; padding: 0; margin-top: 20px; display: flex; flex-direction: column; gap: 10px; }
+        .history-item { background: #111; padding: 15px; border-radius: 12px; border-left: 4px solid var(--eco-green); display: flex; justify-content: space-between; align-items: center; position: relative; }
+        .h-main { font-size: 1.1rem; font-weight: bold; color: #fff; }
+        .h-sub { font-size: 0.8rem; color: #666; }
+        .del-btn { color: #ff3333; padding: 5px 10px; background: rgba(255, 51, 51, 0.1); border-radius: 5px; cursor: pointer; font-size: 0.8rem; }
+    </style>
+</head>
+<body>
+
+    <div id="kimx-loader">
+        <div class="loader-content">
+            <div class="loader-logo">KIMX <span style="color:var(--eco-green);">FUEL</span></div>
+            <div class="loader-spinner"></div>
+            <div class="loader-text">กำลังโหลดข้อมูล...</div>
+        </div>
+    </div>
+
+    <div class="top-nav">
+        <a href="index.html" class="nav-link"><i class="fas fa-chevron-left"></i> หน้าหลัก</a>
+    </div>
+
+    <div class="container">
+        <div class="header-box">
+            <h1>คำนวณ <span class="eco-text">อัตราสิ้นเปลือง</span></h1>
+            <div class="sub-head">เช็คความประหยัด & บันทึกค่าใช้จ่าย</div>
+        </div>
+
+        <div class="input-card">
+            <div class="input-row">
+                <label><span>ระยะทางที่วิ่งได้ (Trip)</span></label>
+                <div class="input-wrapper">
+                    <i class="fas fa-road"></i>
+                    <input type="number" id="distance" placeholder="0" inputmode="decimal" onkeyup="calc()">
+                    <span class="unit-badge">กม.</span>
+                </div>
+            </div>
+            <div class="input-row">
+                <label><span>จำนวนเงินที่เติม</span></label>
+                <div class="input-wrapper">
+                    <i class="fas fa-wallet"></i>
+                    <input type="number" id="money" placeholder="0" inputmode="decimal" onkeyup="calc()">
+                    <span class="unit-badge">บาท</span>
+                </div>
+            </div>
+            <div class="input-row">
+                <label><span>ราคาน้ำมัน (บาท/ลิตร)</span></label>
+                <div class="input-wrapper">
+                    <i class="fas fa-gas-pump"></i>
+                    <input type="number" id="price" value="35.45" inputmode="decimal" onkeyup="calc()">
+                    <span class="unit-badge">B/L</span>
+                </div>
+                <div class="quick-price">
+                    <div class="qp-btn" onclick="setPrice(40.14, this)">เบนซิน 95</div>
+                    <div class="qp-btn" onclick="setPrice(31.85, this)">แก๊ส 95</div>
+                    <div class="qp-btn" onclick="setPrice(31.48, this)">แก๊ส 91</div>
+                    <div class="qp-btn" onclick="setPrice(29.64, this)">E20</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="dashboard">
+            <div class="gauge-card">
+                <div class="gauge-ring" id="gaugeRing">
+                    <div class="gauge-inner">
+                        <div class="gauge-val" id="res_kml">0.0</div>
+                        <div class="gauge-unit">KM / LITER</div>
+                    </div>
+                </div>
+                <div class="gauge-rating" id="ratingText">รอผลลัพธ์...</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-value-sm" id="res_cost_km" style="color:#ffaa00;">0.00</div>
+                <div class="stat-label">บาท / กม.</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value-sm" id="res_liters">0.00</div>
+                <div class="stat-label">ใช้น้ำมัน (ลิตร)</div>
+            </div>
+        </div>
+
+        <button class="btn-action btn-save" onclick="saveHistory()">
+            <i class="fas fa-save"></i> บันทึกข้อมูล (Save)
+        </button>
+
+        <div class="summary-box">
+            <div style="color:#fff; font-weight:bold; margin-bottom:10px;"><i class="fas fa-chart-pie"></i> สถิติภาพรวมทั้งหมด</div>
+            <div class="sum-grid">
+                <div class="sum-item"><div class="sum-val" id="sum_dist">0</div><div class="sum-lbl">ระยะทางรวม</div></div>
+                <div class="sum-item"><div class="sum-val" id="sum_money" style="color:#ffaa00;">0</div><div class="sum-lbl">จ่ายรวม (บาท)</div></div>
+                <div class="sum-item"><div class="sum-val" id="sum_liters">0</div><div class="sum-lbl">ใช้น้ำมัน (ลิตร)</div></div>
+                <div class="sum-item"><div class="sum-val" id="sum_avg" style="color:var(--eco-green);">0</div><div class="sum-lbl">เฉลี่ย (km/l)</div></div>
+            </div>
+        </div>
+
+        <div style="margin-top:30px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; color:#666; font-size:0.9rem;">
+                <span>ประวัติล่าสุด</span>
+                <span onclick="clearHistory()" style="cursor:pointer; text-decoration:underline;">ล้างประวัติ</span>
+            </div>
+            <ul id="history_list" class="history-list"></ul>
+        </div>
+
+        <div class="product-promo">
+            <div class="promo-badge">KIMX RECOMMENDED</div>
+            <div class="promo-icon-box"><i class="fas fa-flask"></i></div>
+            <h3 class="promo-title">อยากประหยัดกว่านี้ไหม?</h3>
+            <p class="promo-desc">
+                ลอง <strong>"น้ำยาหัวเชื้อสูตรเข้มข้น "</strong><br>
+                ล้างหัวฉีด เพิ่มอัตราเร่ง ประหยัดขึ้น 20% เห็นผลทันที!
+            </p>
+            <a href="https://s.shopee.co.th/20oVpSaHFQ" target="_blank" class="promo-btn">
+                <i class="fas fa-shopping-cart"></i> สั่งซื้อผ่าน Shopee
+            </a>
+        </div>
+        
+    </div>
+
+    <script>
+        // เพิ่มส่วนการจัดการ Loader ใน window load
+        window.addEventListener('load', () => {
+            const loader = document.getElementById('kimx-loader');
+            // หน่วงเวลาเล็กน้อยให้เห็นโลโก้ ก่อนซ่อน
+            setTimeout(() => {
+                loader.classList.add('loaded');
+            }, 800);
+
+            loadHistory(); 
+            calc(); 
+        });
+
+        function setPrice(val, btn) {
+            document.getElementById('price').value = val.toFixed(2);
+            calc();
+            document.querySelectorAll('.qp-btn').forEach(b => b.classList.remove('active'));
+            if(btn) btn.classList.add('active');
+        }
+
+        function calc() {
+            const dist = parseFloat(document.getElementById('distance').value) || 0;
+            const money = parseFloat(document.getElementById('money').value) || 0;
+            const price = parseFloat(document.getElementById('price').value) || 1;
+
+            if (price > 0 && money > 0) {
+                const liters = money / price;
+                document.getElementById('res_liters').innerText = liters.toFixed(2);
+                
+                if (dist > 0) {
+                    const kml = dist / liters;
+                    const costKm = money / dist;
+                    
+                    document.getElementById('res_kml').innerText = kml.toFixed(1);
+                    document.getElementById('res_cost_km').innerText = costKm.toFixed(2);
+                    
+                    updateGauge(kml); 
+                } else {
+                    document.getElementById('res_kml').innerText = "0.0";
+                    updateGauge(0);
+                }
+            }
+        }
+
+        function updateGauge(val) {
+            const ring = document.getElementById('gaugeRing');
+            const txt = document.getElementById('ratingText');
+            
+            let percent = (val / 70) * 100;
+            if(percent > 100) percent = 100;
+            
+            let color = '#ff3333'; 
+            let msg = 'กินน้ำมันดุ! ⛽';
+
+            if(val >= 35) { color = '#ffaa00'; msg = 'ประหยัดปานกลาง 😐'; }
+            if(val >= 50) { color = '#00ff66'; msg = 'ประหยัดเทพ! 🚀'; }
+            
+            ring.style.background = `conic-gradient(${color} 0% ${percent}%, #333 ${percent}% 100%)`;
+            
+            if(val > 0) {
+                txt.innerText = msg;
+                txt.style.background = color;
+                txt.style.color = '#000';
+            } else {
+                txt.innerText = 'รอผลลัพธ์...';
+                txt.style.background = '#333';
+                txt.style.color = '#aaa';
+            }
+        }
+
+        function saveHistory() {
+            const dist = parseFloat(document.getElementById('distance').value);
+            const money = parseFloat(document.getElementById('money').value);
+            const price = parseFloat(document.getElementById('price').value);
+            if(!dist || !money || !price) return alert('กรุณากรอกข้อมูลให้ครบถ้วน');
+
+            const liters = money / price;
+            const kml = dist / liters;
+            const costKm = money / dist;
+
+            const item = {
+                id: Date.now(), date: new Date().toLocaleDateString('th-TH'),
+                dist: dist, money: money, liters: liters, kml: kml, costKm: costKm
+            };
+
+            let history = JSON.parse(localStorage.getItem('kimx_fuel_data_v2')) || [];
+            history.unshift(item);
+            localStorage.setItem('kimx_fuel_data_v2', JSON.stringify(history));
+
+            loadHistory();
+            alert('บันทึกเรียบร้อย!');
+            document.getElementById('distance').value = '';
+            document.getElementById('money').value = '';
+            calc();
+        }
+
+        function loadHistory() {
+            let history = JSON.parse(localStorage.getItem('kimx_fuel_data_v2')) || [];
+            const list = document.getElementById('history_list');
+            list.innerHTML = "";
+            let totalDist = 0, totalMoney = 0, totalLiters = 0;
+
+            if(history.length === 0) list.innerHTML = '<div style="text-align:center; color:#444; padding:20px;">ยังไม่มีประวัติ</div>';
+            else {
+                history.forEach(item => {
+                    totalDist += item.dist; totalMoney += item.money; totalLiters += item.liters;
+                    const li = document.createElement('li');
+                    li.className = 'history-item';
+                    li.innerHTML = `
+                        <div style="font-size:0.7rem; color:#444; position:absolute; top:5px; right:10px;">${item.date}</div>
+                        <div><div class="h-main">${item.kml.toFixed(1)} km/l</div><div class="h-sub">วิ่ง ${item.dist} กม. | เติม ${item.money} บ.</div></div>
+                        <div class="del-btn" onclick="deleteItem(${item.id})"><i class="fas fa-trash"></i> ลบ</div>
+                    `;
+                    list.appendChild(li);
+                });
+            }
+            document.getElementById('sum_dist').innerText = totalDist.toLocaleString();
+            document.getElementById('sum_money').innerText = totalMoney.toLocaleString();
+            document.getElementById('sum_liters').innerText = totalLiters.toFixed(1);
+            const grandAvg = totalLiters > 0 ? (totalDist / totalLiters) : 0;
+            document.getElementById('sum_avg').innerText = grandAvg.toFixed(2);
+        }
+
+        function deleteItem(id) {
+            if(!confirm('ลบรายการนี้?')) return;
+            let history = JSON.parse(localStorage.getItem('kimx_fuel_data_v2')) || [];
+            history = history.filter(item => item.id !== id);
+            localStorage.setItem('kimx_fuel_data_v2', JSON.stringify(history));
+            loadHistory();
+        }
+
+        function clearHistory() {
+            if(!confirm('ลบทั้งหมด?')) return;
+            localStorage.removeItem('kimx_fuel_data_v2');
+            loadHistory();
+        }
+    </script>
+</body>
+</html>

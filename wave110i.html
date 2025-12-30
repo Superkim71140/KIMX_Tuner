@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wave 110i LED 2021-2025 (Tuner Edition)</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* --- ธีมสีแดงสำหรับ WAVE 110i --- */
+        :root { 
+            --bg: #050505; 
+            --card-bg: #111; 
+            --primary: #ff3333; /* สีแดงสด */
+            --primary-dark: #cc0000;
+            --text: #ffffff; 
+            --border: #333; 
+        }
+
+        body {
+            font-family: 'Kanit', sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 20px;
+            background-image: linear-gradient(rgba(0,0,0,0.92), rgba(0,0,0,0.92)), url('https://www.transparenttextures.com/patterns/carbon-fibre.png');
+        }
+        .container { max-width: 850px; margin: 0 auto; padding-bottom: 40px; margin-top: 60px; }
+        
+        /* NAV BAR */
+        .top-nav {
+            position: fixed; top: 15px; left: 50%; transform: translateX(-50%); z-index: 10000;
+            display: flex; gap: 8px; background: rgba(0,0,0,0.9);
+            padding: 8px 15px; border-radius: 50px; border: 1px solid #444;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.5); backdrop-filter: blur(5px);
+            white-space: nowrap;
+        }
+        .nav-item {
+            text-decoration: none; color: #888; padding: 6px 15px;
+            border-radius: 20px; font-weight: bold; font-size: 0.9rem;
+            transition: 0.3s; display: flex; align-items: center; gap: 5px;
+        }
+        .nav-item:hover { color: #fff; background: rgba(255,255,255,0.1); }
+        .nav-item.active { background: var(--primary); color: #fff; box-shadow: 0 0 15px var(--primary); }
+
+        /* HEADER */
+        .header-box { text-align: center; margin-bottom: 30px; border: 2px solid var(--primary); padding: 25px; border-radius: 20px; background: radial-gradient(circle, rgba(255, 51, 51, 0.1) 0%, rgba(0,0,0,1) 100%); box-shadow: 0 0 30px rgba(255, 51, 51, 0.15); position: relative; overflow: hidden; }
+        h1 { margin: 0; font-style: italic; text-transform: uppercase; font-size: 2.2rem; line-height: 1.2; text-shadow: 2px 2px 0px #000; }
+        .kimx-text { color: var(--primary); font-weight: 900; text-shadow: 0 0 15px var(--primary); }
+
+        /* PRESETS */
+        .preset-section { margin-bottom: 25px; text-align: center; }
+        .preset-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; margin-top: 10px; }
+        .preset-btn { 
+            background: #222; border: 1px solid #444; color: #fff; padding: 15px 10px; 
+            border-radius: 12px; cursor: pointer; transition: 0.2s; font-size: 0.9rem; 
+            display: flex; flex-direction: column; align-items: center; gap: 8px; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        .preset-btn i { font-size: 1.5rem; color: var(--primary); }
+        .preset-btn:hover { background: #333; transform: translateY(-3px); border-color: var(--primary); box-shadow: 0 5px 15px rgba(255, 51, 51, 0.2); }
+
+        /* DASHBOARD */
+        .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 30px; }
+        .stat-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 15px; padding: 20px; text-align: center; position: relative; }
+        .stat-card.highlight { grid-column: span 2; border: 2px solid var(--primary); background: linear-gradient(180deg, #1a1a1a 0%, #000 100%); box-shadow: 0 0 20px rgba(255, 51, 51, 0.1); }
+        .stat-value { font-size: 5rem; font-weight: 800; color: var(--primary); text-shadow: 0 0 25px rgba(255, 51, 51, 0.4); line-height: 1; }
+        .stat-label { font-size: 0.9rem; color: #888; letter-spacing: 2px; margin-top: 10px; }
+
+        /* CONTROLS */
+        .control-section { background: var(--card-bg); padding: 20px; border-radius: 12px; margin-bottom: 20px; border-left: 4px solid var(--border); transition: 0.3s; }
+        .control-section:hover { border-left-color: var(--primary); box-shadow: -5px 0 15px rgba(255, 51, 51, 0.1); }
+        .section-header { font-size: 1.1rem; color: #fff; margin-bottom: 15px; font-weight: bold; display: flex; align-items: center; gap: 10px; }
+        .section-header i { color: var(--primary); }
+        
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        label { display: block; margin-bottom: 6px; font-size: 0.85rem; color: #aaa; }
+        input, select { width: 100%; padding: 12px; background: #222; border: 1px solid #444; color: #fff; border-radius: 8px; font-family: 'Kanit'; font-size: 1rem; transition: 0.2s; box-sizing: border-box; }
+        input:focus, select:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 10px rgba(255, 51, 51, 0.2); }
+        
+        /* CAM BUTTONS */
+        .cam-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 8px; }
+        .cam-btn { background: #222; border: 1px solid #444; color: #aaa; padding: 12px; text-align: center; border-radius: 8px; cursor: pointer; font-size: 0.9rem; transition: 0.2s; }
+        .cam-btn:hover { background: #333; }
+        .cam-btn.active { background: var(--primary); color: #fff; font-weight: bold; border-color: var(--primary); box-shadow: 0 0 15px var(--primary); transform: scale(1.05); }
+
+        /* BUTTON GROUP */
+        .btn-group { display: flex; gap: 10px; margin-bottom: 30px; }
+        .run-btn { 
+            flex: 3; padding: 15px; background: linear-gradient(45deg, #ff0000, #990000); 
+            color: white; font-size: 1.5rem; font-weight: bold; border: none; 
+            border-radius: 10px; cursor: pointer; text-transform: uppercase; 
+            font-style: italic; box-shadow: 0 5px 15px rgba(255, 0, 0, 0.3); transition: 0.3s; 
+        }
+        .run-btn:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(255, 0, 0, 0.5); }
+        .reset-btn { flex: 1; background: #333; color: #aaa; border: 1px solid #555; border-radius: 10px; cursor: pointer; font-size: 1rem; font-weight: 600; transition: 0.2s; }
+        .reset-btn:hover { background: #444; color: #fff; }
+
+        /* DYNO SECTION */
+        .dyno-section { margin-top: 50px; border-top: 2px solid rgba(255, 51, 51, 0.2); padding-top: 40px; display: none; animation: fadeIn 0.5s; }
+        #dynoSimulationArea { background: rgba(10, 10, 10, 0.95); border-radius: 20px; padding: 30px; border: 2px solid rgba(255, 51, 51, 0.1); box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.5); }
+        .dyno-container { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-bottom: 30px; }
+        .graph-container { background: rgba(0,0,0,0.6); padding: 20px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1); min-height: 300px; }
+        .graph-title { text-align: center; font-weight: 800; color: #fff; margin-bottom: 15px; text-transform: uppercase; }
+        .dyno-results { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; background: rgba(255, 51, 51, 0.05); padding: 25px; border-radius: 15px; border: 1px solid rgba(255, 51, 51, 0.1); text-align: center; }
+        .dr-label { font-size: 0.9rem; color: #aaa; margin-bottom: 5px; }
+        .dr-value { font-size: 2.5rem; font-weight: 900; color: #fff; line-height: 1; }
+        .dr-unit { font-size: 1rem; color: #888; }
+        .dr-highlight { color: var(--primary); text-shadow: 0 0 15px rgba(255, 51, 51, 0.5); }
+
+        /* AI LOG */
+        .ai-log { margin-top: 30px; padding: 20px; background: #0a0a0a; border: 1px solid #333; border-radius: 12px; box-shadow: inset 0 0 20px rgba(0,0,0,0.8); position: relative; overflow: hidden; }
+        .ai-log::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: linear-gradient(90deg, transparent, var(--primary), transparent); animation: scan 2s infinite; }
+        @keyframes scan { 0% {transform: translateX(-100%);} 100% {transform: translateX(100%);} }
+        .ai-header { color: var(--primary); font-weight: bold; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; text-transform: uppercase; }
+        .log-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
+        .ai-msg { padding: 12px 15px; background: #151515; border-left: 4px solid #555; border-radius: 4px; font-size: 0.85rem; color: #ccc; display: flex; flex-direction: column; }
+        .ai-msg strong { display: block; margin-bottom: 3px; font-size: 0.9rem; color: #fff; }
+        .msg-danger { border-left-color: #ff3333; background: rgba(255, 51, 51, 0.05); }
+        .msg-warn { border-left-color: #ffaa00; background: rgba(255, 170, 0, 0.05); }
+        .msg-info { border-left-color: #00ccff; background: rgba(0, 204, 255, 0.05); }
+        
+        /* SHOPPE BUTTON (ปุ่มเล็ก) */
+        .product-info-box { margin-top: 15px; padding: 15px; background: #1a1a1a; border-left: 4px solid var(--primary); border-radius: 8px; display: flex; justify-content: space-between; align-items: center; gap: 15px; }
+        .spec-title { color: var(--primary); font-weight: bold; font-size: 1.1rem; }
+        .shopee-btn { 
+            background: #ee4d2d; 
+            color: #fff; 
+            padding: 6px 15px; 
+            border-radius: 5px; 
+            font-weight: 600; 
+            text-decoration: none; 
+            display: inline-flex; 
+            align-items: center; 
+            gap: 5px; 
+            font-size: 0.8rem; 
+            transition: 0.2s; 
+            border: none;
+            box-shadow: 0 2px 5px rgba(238, 77, 45, 0.3);
+        }
+        .shopee-btn:hover { background: #ff6644; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(238, 77, 45, 0.5); }
+
+        /* ADS SECTION */
+        .partner-section { margin-top: 35px; padding: 20px; background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%); border: 1px dashed var(--primary); border-radius: 12px; text-align: center; position: relative; }
+        .partner-badge { position: absolute; top: -16px; left: 50%; transform: translateX(-50%); background: linear-gradient(45deg, #FFD700, #FFC107); color: #000; font-weight: 800; font-size: 0.9rem; padding: 6px 20px; border-radius: 25px; border: 3px solid #111; z-index: 10; animation: pulse 2s infinite; }
+        .partner-content { margin-top: 30px; display: flex; flex-direction: column; gap: 8px; }
+        .fb-btn { background: linear-gradient(to right, #0064e0, #1877F2); color: #fff; padding: 8px 20px; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 0.9rem; display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; }
+        
+        /* SUPPORT MODAL */
+        .support-btn { width: 100%; padding: 15px; background: transparent; border: 2px solid var(--primary); color: var(--primary); border-radius: 12px; cursor: pointer; margin-top: 30px; font-size: 1.1rem; font-weight: 800; text-transform: uppercase; transition: 0.3s; }
+        .support-btn:hover { background: var(--primary); color: #fff; }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 20000; justify-content: center; align-items: center; }
+        .modal-content { background: #111; border: 2px solid var(--primary); padding: 30px; border-radius: 20px; text-align: center; width: 300px; position: relative; }
+        .close-modal { position: absolute; top: 10px; right: 15px; color: #888; cursor: pointer; font-size: 1.5rem; }
+
+        @keyframes pulse { 0% { transform: translateX(-50%) scale(1); } 50% { transform: translateX(-50%) scale(1.1); } 100% { transform: translateX(-50%) scale(1); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* LOADING SCREEN CSS */
+        #kimx-loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 99999; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: opacity 0.6s ease; }
+        .spinner-box { position: relative; width: 80px; height: 80px; display: flex; justify-content: center; align-items: center; }
+        .spinner { width: 100%; height: 100%; border: 4px solid rgba(255, 51, 51, 0.2); border-top: 4px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
+        .spinner-logo { position: absolute; font-size: 1.5rem; color: #fff; font-weight: bold; font-style: italic; }
+        .loader-text { margin-top: 20px; font-family: 'Kanit', sans-serif; color: #888; letter-spacing: 3px; font-size: 0.9rem; animation: blink 1.5s infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } } @keyframes blink { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } } .loaded { opacity: 0; pointer-events: none; }
+
+        /* MOBILE */
+        @media screen and (max-width: 600px) {
+            .stat-value { font-size: 2.5rem !important; }
+            .dyno-container { grid-template-columns: 1fr; }
+            .dyno-results { grid-template-columns: 1fr; gap: 10px; }
+            .product-info-box { flex-direction: column; text-align: center; }
+            .shopee-btn { width: 100%; justify-content: center; }
+        }
+        /* --- CSS ส่วนแนะนำเชิงลึก (NEW FEATURE) --- */
+        .tech-blueprint { margin-top: 25px; background: #0f0f0f; border: 1px solid #333; border-radius: 15px; padding: 20px; position: relative; overflow: hidden; }
+        .tech-blueprint::after { content: 'TUNER BLUEPRINT'; position: absolute; bottom: 10px; right: 10px; font-size: 3rem; font-weight: 900; color: rgba(255,255,255,0.03); pointer-events: none; font-style: italic; }
+        .blueprint-header { color: #fff; font-size: 1.2rem; font-weight: bold; border-bottom: 2px solid var(--primary); padding-bottom: 10px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .blueprint-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+        .tech-item { background: #1a1a1a; padding: 15px; border-radius: 8px; border-left: 3px solid #444; transition: 0.3s; }
+        .tech-item:hover { background: #222; border-left-color: var(--primary); transform: translateY(-2px); }
+        .tech-label { font-size: 0.8rem; color: #888; margin-bottom: 5px; }
+        .tech-val { font-size: 1.2rem; font-weight: bold; color: #fff; }
+        .tech-desc { font-size: 0.75rem; color: var(--primary); margin-top: 3px; }
+
+        /* --- CSS สำหรับ ENGINE MONITOR (ฟีเจอร์ใหม่) --- */
+        .status-monitor { margin-top: 25px; background: #0f0f0f; border: 1px solid #333; border-radius: 15px; padding: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.5); }
+        .monitor-header { color: #fff; font-weight: bold; margin-bottom: 20px; border-bottom: 2px solid var(--primary); padding-bottom: 10px; font-size: 1.1rem; display: flex; align-items: center; gap: 10px; }
+        .monitor-grid { display: flex; flex-direction: column; gap: 15px; }
+        .monitor-card { display: flex; align-items: center; gap: 15px; background: #1a1a1a; padding: 15px; border-radius: 10px; border-left: 4px solid #444; transition: 0.3s; }
+        .m-icon { font-size: 1.5rem; color: #666; width: 40px; text-align: center; }
+        .m-info { flex-grow: 1; }
+        .m-title { font-size: 0.8rem; color: #888; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }
+        .m-val { font-size: 0.8rem; font-weight: bold; color: #fff; }
+        .m-bar-bg { width: 100%; height: 6px; background: #333; border-radius: 10px; overflow: hidden; margin-bottom: 5px; position: relative; }
+        .m-bar-fill { height: 100%; transition: width 0.5s ease, background-color 0.5s ease; border-radius: 10px; }
+        .m-status { font-size: 0.9rem; font-weight: bold; color: #fff; }
+        
+        /* สีสถานะ */
+        .status-good { border-left-color: #00ff66 !important; } .status-good .m-icon { color: #00ff66; } .status-good .m-bar-fill { background: #00ff66; } .status-good .m-status { color: #00ff66; }
+        .status-warn { border-left-color: #ffaa00 !important; } .status-warn .m-icon { color: #ffaa00; } .status-warn .m-bar-fill { background: #ffaa00; } .status-warn .m-status { color: #ffaa00; }
+        .status-bad { border-left-color: #ff3333 !important; } .status-bad .m-icon { color: #ff3333; } .status-bad .m-bar-fill { background: #ff3333; } .status-bad .m-status { color: #ff3333; }
+    </style>
+</head>
+<body>
+
+    <div id="kimx-loader">
+        <div class="spinner-box"><div class="spinner"></div><div class="spinner-logo">KIMX</div></div>
+        <div class="loader-text">กำลังโหลดข้อมูล...</div>
+    </div>
+
+    <div class="top-nav">
+        <a href="index.html" class="nav-item"><i class="fas fa-home"></i> HOME</a>
+        <a href="wave125i.html" class="nav-item"><i class="fas fa-motorcycle"></i> 125i</a>
+        <a href="wave110i.html" class="nav-item active"><i class="fas fa-motorcycle"></i> 110i</a>
+        <a href="pcx160.html" class="nav-item"><i class="fas fa-space-shuttle"></i> PCX160</a>
+    </div>
+
+    <div class="container">
+        <div class="header-box">
+            <h1>WAVE 110i LED <span class="kimx-text">2021-2025</span></h1>
+            <div style="font-size: 0.9rem; color: #888; margin-top: 5px; letter-spacing: 2px;">SMART ENGINE / SOHC TUNER</div>
+        </div>
+
+        <div class="preset-section">
+            <div style="color:var(--primary); font-weight:bold; letter-spacing:1px; margin-bottom:5px;">
+                <i class="fas fa-magic"></i> เลือกสูตรสำเร็จ (ONE-CLICK RECIPES)
+            </div>
+            <div class="preset-grid">
+                <div class="preset-btn" onclick="applyPreset('step1')">
+                    <i class="fas fa-motorcycle"></i> <span>ใช้งานเดิมๆ<br>(ลูก 47-50)</span>
+                </div>
+                <div class="preset-btn" onclick="applyPreset('step2')">
+                    <i class="fas fa-road"></i> <span>ไล่ข้าง/แคม<br>(ลูก 53)</span>
+                </div>
+                <div class="preset-btn" onclick="applyPreset('step3')">
+                    <i class="fas fa-bolt"></i> <span>ดันโลเต็มระบบ<br>(ลูก 54-56)</span>
+                </div>
+                <div class="preset-btn" onclick="applyPreset('step4')">
+                    <i class="fas fa-rocket"></i> <span>Open 4V<br>(ลูก 58+)</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="dashboard">
+            <div class="stat-card highlight"><div class="stat-value" id="disp_speed">0</div><div class="stat-label">GPS / EST. TOP SPEED (KM/H)*</div></div>
+            <div class="stat-card"><div class="stat-value" id="disp_cc" style="font-size: 2.5rem; color: #fff;">109</div><div class="stat-label">CC ENGINE</div></div>
+            <div class="stat-card"><div class="stat-value" id="disp_rpm" style="font-size: 2.5rem; color: #ff8800;">9.0</div><div class="stat-label">RPM (x1000)</div></div>
+        </div>
+        
+        <div class="btn-group">
+            <button class="run-btn" onclick="toggleDyno()"><i class="fas fa-tachometer-alt"></i> TEST DYNO RUN</button>
+            <button class="reset-btn" onclick="resetDefaults()"><i class="fas fa-undo"></i> คืนค่าเริ่มต้น</button>
+        </div>
+        
+        <form id="tunerForm" onchange="runCalculation()"> 
+            
+            <div class="control-section">
+                <div class="section-header"><i class="fas fa-cogs"></i> สเปคเครื่องยนต์ (Smart Engine)</div>
+                <div class="grid-2" style="margin-bottom: 20px;">
+                    <div><label>ลูกสูบ (mm)</label><input type="number" id="piston" value="47" placeholder="47-66"></div>
+                    <div><label>ช่วงชักเดิม (mm)</label><input type="number" id="stroke" value="63.1" placeholder="เดิม 63.1" readonly></div>
+                    <div style="grid-column: span 2;"><label>ขนาดวาล์ว (Valve)</label><select id="valve_size"><option value="std">วาล์วเดิม</option><option value="formula">วาล์วแต่ง (ตามสูตรลูก)</option><option value="24/28">24 / 28</option><option value="26/30">26 / 30</option><option value="28/32">28 / 32</option></select></div>
+                </div>
+            </div>
+            
+            <div class="control-section">
+                <div class="section-header" style="justify-content: space-between;">
+                    <span><i class="fas fa-wave-square"></i> แคมชาร์ฟ (Camshaft)</span>
+                </div>
+                <div class="cam-grid">
+                    <div class="cam-btn active" id="btn_cam_std" onclick="setCam('std', this)">เดิม</div>
+                    <div class="cam-btn" id="btn_cam_n1" onclick="setCam('n1', this)">N1</div>
+                    <div class="cam-btn" id="btn_cam_n2" onclick="setCam('n2', this)">N2</div>
+                    <div class="cam-btn" id="btn_cam_open" onclick="setCam('open', this)">OPEN</div>
+                </div>
+                <input type="hidden" id="cam" value="std">
+                <div id="cam_display_area"></div>
+            </div>
+            
+            <div class="control-section">
+                <div class="section-header" style="justify-content: space-between;">
+                    <span><i class="fas fa-fire"></i> ระบบน้ำมัน & หัวฉีด</span>
+                </div>
+               <div style="margin-bottom: 15px;">
+                    <label style="color:var(--primary); font-weight:bold; margin-bottom:8px;">เลือกเบอร์หัวฉีด (Injector)</label>
+                    <div class="cam-grid">
+                        <div class="cam-btn active" id="btn_inj_std" onclick="setInjector('std', this)">เดิม</div>
+                        <div class="cam-btn" id="btn_inj_6j" onclick="setInjector('6j', this)">6J</div>
+                        <div class="cam-btn" id="btn_inj_6k" onclick="setInjector('6k', this)">6K</div>
+                        <div class="cam-btn" id="btn_inj_8w" onclick="setInjector('8w', this)">8W</div>
+                        <div class="cam-btn" id="btn_inj_10h" onclick="setInjector('10h', this)">10H</div>
+                    </div>
+                    <input type="hidden" id="injector" value="std">
+                    <div id="injector_display_area"></div>
+                </div>
+                <div class="grid-2" style="border-top: 1px solid #333; padding-top: 15px;">
+                    <div><label>ชนิดน้ำมัน</label><select id="fuel"><option value="91">91/95</option><option value="e20">E20</option><option value="e85">E85</option></select></div>
+                    <div><label>กล่อง ECU</label><select id="ecu"><option value="std" selected>กล่องเดิม (9.5k)</option><option value="remap">Remap (11k)</option><option value="open">Standalone (12.5k)</option></select></div>
+                    <div style="grid-column: span 2;"><label>สเตอร์หน้า / หลัง (เดิม 14/35)</label><div style="display:flex; gap:5px;"><input type="number" id="front" value="14"><input type="number" id="rear" value="35"></div></div>
+                </div>
+            </div>
+
+            <div class="control-section">
+                <div class="section-header"><i class="fas fa-fire-flame-curved"></i> ท่อไอเสีย</div>
+                <div class="cam-grid">
+                    <div class="cam-btn active" id="btn_ex_std" onclick="setExhaust('std', this)">ท่อเดิม</div>
+                    <div class="cam-btn" id="btn_ex_mok" onclick="setExhaust('mok', this)">ผ่าหมก</div>
+                    <div class="cam-btn" id="btn_ex_dang" onclick="setExhaust('dang', this)">ผ่าดัง</div>
+                </div>
+                <input type="hidden" id="ex_type" value="std">
+            </div>
+        </form>
+        
+        <div id="dyno_section" class="dyno-section">
+            <h2 style="text-align:center; color:var(--primary);"><i class="fas fa-tachometer-alt"></i> DYNO TEST RESULT</h2>
+            <div id="dynoSimulationArea">
+                <div class="dyno-container">
+                    <div class="graph-container">
+                        <div class="graph-title">SPEED & RPM</div>
+                        <canvas id="speedGraph"></canvas>
+                    </div>
+                    <div class="graph-container">
+                        <div class="graph-title">POWER CURVE (HP)</div>
+                        <canvas id="hpGraph"></canvas>
+                    </div>
+                </div>
+                <div class="dyno-results">
+                    <div class="dr-item"><div class="dr-label">0-100 KM/H</div><div class="dr-value" id="dyno_0_100">-.-</div><div class="dr-unit">SEC</div></div>
+                    <div class="dr-item"><div class="dr-label">TOP SPEED</div><div class="dr-value dr-highlight" id="dyno_max_speed">-</div><div class="dr-unit">KM/H</div></div>
+                    <div class="dr-item"><div class="dr-label">MAX POWER</div><div class="dr-value" id="dyno_peak_hp">-.-</div><div class="dr-unit">HP</div></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="ai-log">
+
+           <div class="status-monitor">
+            <div class="monitor-header">
+                <i class="fas fa-heartbeat"></i> ENGINE HEALTH MONITOR (สถานะระบบ)
+            </div>
+            <div class="monitor-grid">
+                
+                <div class="monitor-card" id="card_af">
+                    <div class="m-icon"><i class="fas fa-gas-pump"></i></div>
+                    <div class="m-info">
+                        <div style="display:flex; justify-content:space-between;">
+                            <div class="m-title">ส่วนผสมน้ำมัน/อากาศ (A/F Ratio)</div>
+                            <div class="m-val" id="val_af">Checking...</div>
+                        </div>
+                        <div class="m-bar-bg"><div id="bar_af" class="m-bar-fill" style="width: 50%;"></div></div>
+                        <div id="text_af" class="m-status">กำลังวิเคราะห์...</div>
+                    </div>
+                </div>
+
+                <div class="monitor-card" id="card_temp">
+                    <div class="m-icon"><i class="fas fa-thermometer-three-quarters"></i></div>
+                    <div class="m-info">
+                        <div style="display:flex; justify-content:space-between;">
+                            <div class="m-title">ความร้อนสะสม (Thermal Stress)</div>
+                            <div class="m-val" id="val_temp">0%</div>
+                        </div>
+                        <div class="m-bar-bg"><div id="bar_temp" class="m-bar-fill" style="width: 20%;"></div></div>
+                        <div id="text_temp" class="m-status">ปกติ (Safe)</div>
+                    </div>
+                </div>
+
+                <div class="monitor-card" id="card_flow">
+                    <div class="m-icon"><i class="fas fa-wind"></i></div>
+                    <div class="m-info">
+                        <div style="display:flex; justify-content:space-between;">
+                            <div class="m-title">การระบายไอเสีย (Flow Efficiency)</div>
+                            <div class="m-val" id="val_flow">100%</div>
+                        </div>
+                        <div class="m-bar-bg"><div id="bar_flow" class="m-bar-fill" style="width: 100%;"></div></div>
+                        <div id="text_flow" class="m-status">ไหลลื่น (Excellent)</div>
+                    </div>
+                </div>
+
+            </div>
+
+        <div class="partner-section">
+            <div class="partner-badge"><i class="fas fa-bullhorn"></i> พื้นที่โฆษณา</div>
+            <div class="partner-content">
+                <div class="partner-title">🚀 เพิ่มยอดขายอะไหล่ 110i?</div>
+                <div class="partner-desc">ลงโฆษณากับเรา เจาะกลุ่มเป้าหมายสายซิ่งโดยตรง</div>
+                <a href="https://www.facebook.com/chokhthwitantraklu?locale=th_TH" target="_blank" class="fb-btn"><i class="fab fa-facebook-messenger"></i> ติดต่อลงโฆษณา</a>
+            </div>
+        </div>
+
+        <button class="support-btn" onclick="openModal()"><i class="fas fa-heart"></i> สนับสนุน (Donate)</button>
+    </div>
+
+    <div id="supportModal" class="modal-overlay" onclick="closeModal(event)">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal(event)">&times;</span>
+            <h3 style="color:var(--primary); margin-top:0;">สนับสนุนผู้พัฒนา</h3>
+            <img src="https://promptpay.io/0828057662.png" style="width:100%; border-radius:10px; margin:10px 0;">
+            <div style="font-size:1.2rem; font-weight:bold; color:#fff;">082-805-7662</div>
+        </div>
+    </div>
+    
+    <script>
+        function openModal() { document.getElementById('supportModal').style.display = 'flex'; }
+        function closeModal(e) { if(e.target.id === 'supportModal' || e.target.classList.contains('close-modal')) document.getElementById('supportModal').style.display = 'none'; }
+
+        // --- 1. ฐานข้อมูลสินค้า (Product DB) ---
+        const camData = {
+            'std': { title: "แคมเดิมโรงงาน", desc: "เงียบ ทนทาน ประหยัด", link: "" },
+            'n1': { title: "แคมแต่ง KIMX N.1", desc: "แก้อาการรอรอบ! ต้นจัด ปลายไหล สำหรับลูกเดิม-53", link: "https://shopee.co.th/search?keyword=camshaft+wave110i+n1" },
+            'n2': { title: "แคมแต่ง KIMX N.2", desc: "องศาสูง ท้ายลึก! ขับทางไกลแช่ยาว สำหรับลูก 54-56", link: "https://shopee.co.th/search?keyword=camshaft+wave110i+n2" },
+            'open': { title: "แคม KIMX OPEN", desc: "ระยะยกสูงพิเศษ! สำหรับรถแข่ง 4 วาล์ว / Open", link: "https://shopee.co.th/search?keyword=camshaft+wave110i+open" }
+        };
+        const injData = {
+            'std': { 
+                title: "หัวฉีดเดิม (Stock)", 
+                desc: "จ่ายน้ำมันมาตรฐานโรงงาน <br> เหมาะสำหรับ: รถเดิม - ลูก 50 (ไม่ทำชัก)", 
+                link: "" 
+            },
+            '6j': { 
+                title: "หัวฉีด 6 รู J (125cc)", 
+                desc: "จ่ายหนากว่าเดิมเล็กน้อย <br> เหมาะสำหรับ: ลูก 51 - 53 (ไล่ข้าง/แคม)", 
+                link: "https://shopee.co.th/search?keyword=injector+6j+wave110i" 
+            },
+            '6k': { 
+                title: "หัวฉีด 6 รู K (145cc - 160cc)", 
+                desc: "ฝอยละเอียด จ่ายแม่นยำ <br> เหมาะสำหรับ: ลูก 53 (มีชัก) - 55 / หัวนูน", 
+                link: "https://shopee.co.th/search?keyword=injector+6k" 
+            },
+            '8w': { 
+                title: "หัวฉีด 8 รู W (170cc+)", 
+                desc: "รองรับน้ำมัน E85/E20 ได้ดีเยี่ยม <br> เหมาะสำหรับ: ลูก 56 - 58", 
+                link: "https://shopee.co.th/search?keyword=injector+8w" 
+            },
+            '10h': { 
+                title: "หัวฉีด 10 รู H (Racing)", 
+                desc: "จ่ายหนัก! สำหรับรถแข่งทางตรง <br> เหมาะสำหรับ: ลูก 59 ขึ้นไป / รถ Open 4 วาล์ว", 
+                link: "https://shopee.co.th/search?keyword=injector+10h" 
+            }
+        };
+
+        // --- 2. ฟังก์ชันแสดงผลสินค้า (ปุ่มเล็ก) ---
+        function updateProductDisplay(elementId, data) {
+            const container = document.getElementById(elementId);
+            if (!data) return;
+            const btnHtml = data.link ? 
+                `<a href="${data.link}" target="_blank" class="shopee-btn">
+                    <i class="fas fa-shopping-cart"></i> สั่งซื้อ
+                 </a>` : '';
+            container.innerHTML = `
+                <div class="product-info-box" style="border-left: 4px solid #ff3333; background:rgba(255,51,51,0.1);">
+                    <div class="spec-text">
+                        <div class="spec-title" style="color:#ff3333;">${data.title}</div>
+                        <div class="spec-detail">${data.desc}</div>
+                    </div>
+                    ${btnHtml}
+                </div>`;
+        }
+
+        // --- 3. ฟังก์ชันเลือกอะไหล่ ---
+        function setCam(val, el) { 
+            document.getElementById('cam').value = val; updateActiveBtn(el); runCalculation(); updateProductDisplay('cam_display_area', camData[val]);
+        }
+        function setInjector(val, el) { 
+            document.getElementById('injector').value = val; updateActiveBtn(el); runCalculation(); updateProductDisplay('injector_display_area', injData[val]);
+        }
+        function setExhaust(val, el) {
+             document.getElementById('ex_type').value = val; updateActiveBtn(el); runCalculation();
+        }
+        function updateActiveBtn(el) {
+            el.closest('.control-section').querySelectorAll('.cam-btn').forEach(b => b.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        // --- 4. ปุ่ม Reset & Preset ---
+        function resetDefaults() {
+            document.getElementById('piston').value = 47;
+            document.getElementById('valve_size').value = 'std';
+            document.getElementById('fuel').value = '91';
+            document.getElementById('ecu').value = 'std';
+            document.getElementById('front').value = 14;
+            document.getElementById('rear').value = 35;
+            ['btn_cam_std', 'btn_inj_std', 'btn_ex_std'].forEach(id => document.getElementById(id).click());
+            runCalculation();
+        }
+
+        function applyPreset(type) {
+            resetDefaults();
+            setTimeout(() => {
+                if(type === 'step1') { // ใช้งาน
+                    document.getElementById('piston').value = 50;
+                    document.getElementById('btn_cam_n1').click();
+                    document.getElementById('btn_ex_mok').click();
+                } else if(type === 'step2') { // ลูก 53
+                    document.getElementById('piston').value = 53;
+                    document.getElementById('btn_cam_n1').click();
+                    document.getElementById('btn_inj_6j').click();
+                    document.getElementById('btn_ex_mok').click();
+                    document.getElementById('rear').value = 30;
+                } else if(type === 'step3') { // ลูก 56
+                    document.getElementById('piston').value = 56;
+                    document.getElementById('btn_cam_n2').click();
+                    document.getElementById('btn_inj_6k').click();
+                    document.getElementById('btn_ex_dang').click();
+                    document.getElementById('ecu').value = 'remap';
+                    document.getElementById('front').value = 14;
+                    document.getElementById('rear').value = 28;
+                    document.getElementById('fuel').value = 'e85';
+                } else if(type === 'step4') { // Open 59+
+                    document.getElementById('piston').value = 59;
+                    document.getElementById('btn_cam_open').click();
+                    document.getElementById('btn_inj_8w').click();
+                    document.getElementById('ecu').value = 'open';
+                    document.getElementById('front').value = 15;
+                    document.getElementById('rear').value = 24;
+                }
+                runCalculation();
+            }, 100);
+        }
+
+        // --- 5. ระบบคำนวณ (Physics V.TURBO: 53=150+, 54-56=160+) ---
+        function runCalculation() {
+            const p = parseFloat(document.getElementById('piston').value) || 47;
+            const s = 63.1;
+            const front = parseFloat(document.getElementById('front').value) || 14;
+            const rear = parseFloat(document.getElementById('rear').value) || 35;
+            const ecu = document.getElementById('ecu').value;
+            
+            // CC
+            const cc = (Math.PI * Math.pow(p/2, 2) * s) / 1000;
+            document.getElementById('disp_cc').innerText = cc.toFixed(0);
+
+            // RPM
+            let rpm = 8500; 
+            if(ecu === 'remap') rpm = 11000; 
+            if(ecu === 'open') rpm = 13000;
+            document.getElementById('disp_rpm').innerText = (rpm/1000).toFixed(1);
+
+            // Speed Formula
+            const primary = 3.421; const gear4 = 0.928; const tire = 1.88; 
+            const totalReduction = primary * gear4 * (rear / front);
+            let theorySpeed = (rpm / totalReduction) * tire * 0.06;
+            
+            // --- New Efficiency Logic (V.TURBO) ---
+            let eff = 0.92; // พื้นฐานเครื่องทำมาดี
+            
+            // หักลบแรงต้านลม (ลดน้อยลงกว่าเดิมเพื่อให้เลขไหล)
+            if (theorySpeed > 100) eff -= 0.03;
+            if (theorySpeed > 140) eff -= 0.05;
+            
+            // Boost สำหรับลูกโต (สู้ลมดี)
+            if (p >= 53) eff += 0.05;
+            if (p >= 56) eff += 0.03;
+
+            // หักลบถ้าอุปกรณ์ไม่ถึง
+            const inj = document.getElementById('injector').value;
+            const ex_type = document.getElementById('ex_type').value;
+            if (cc > 130 && inj === 'std') eff -= 0.20; 
+            if (cc > 125 && ex_type === 'std') eff -= 0.10;
+
+            let finalSpeed = theorySpeed * eff;
+            
+            // --- Force Logic (ดันกราฟตามคำขอ) ---
+            // ลูก 53 (139cc) -> ดันให้แตะ 150
+            if (p >= 53 && p < 54 && ecu !== 'std' && finalSpeed < 150) {
+                finalSpeed = 148 + Math.random() * 5; 
+            }
+            // ลูก 54-56 (145-155cc) -> ดันให้แตะ 160
+            if (p >= 54 && p <= 56 && ecu !== 'std' && finalSpeed < 160) {
+                finalSpeed = 160 + Math.random() * 5; 
+            }
+            // ลูก 59+ (Open) -> ดันให้แตะ 180 (ถ้าสเตอร์ได้)
+            if (p >= 59 && ecu === 'open' && (rear/front) < 2.0 && finalSpeed < 180) {
+                finalSpeed = 180 + Math.random() * 10;
+            }
+
+            document.getElementById('disp_speed').innerText = Math.floor(finalSpeed);
+            
+            generateMechanicAdvice(p, cc, inj, finalSpeed, ecu, ex_type);
+        }
+
+        // --- 6. AI MECHANIC (ปุ่มเล็ก + คำพูดวัยรุ่น) ---
+        function generateMechanicAdvice(p, cc, inj, speed, ecu, ex) {
+            const logs = document.getElementById('log_list'); logs.innerHTML = "";
+            const speedInt = Math.floor(speed);
+
+            const addMsg = (type, title, desc, link = '') => {
+                let color = type === 'danger' ? '#ff3333' : (type === 'warn' ? '#ffaa00' : '#00eaff');
+                let icon = type === 'danger' ? 'exclamation-circle' : (type === 'warn' ? 'tools' : 'check-circle');
+                
+                const btnHtml = link ? 
+                    `<div style="margin-top:8px;">
+                        <a href="${link}" target="_blank" class="shopee-btn">
+                            <i class="fas fa-shopping-cart"></i> สั่งซื้อ (แนะนำ)
+                        </a>
+                     </div>` : '';
+
+                logs.innerHTML += `
+                    <li class="ai-msg" style="border-left: 4px solid ${color}; background: rgba(0,0,0,0.3); margin-bottom:10px; padding:15px;">
+                        <strong style="color:${color}; display:flex; align-items:center; gap:10px; font-size:1rem;">
+                            <i class="fas fa-${icon}"></i> ${title}
+                        </strong>
+                        <div style="color:#ccc; margin:5px 0; font-size:0.9rem; line-height:1.5;">${desc}</div>
+                        ${btnHtml}
+                    </li>`;
+            }
+
+            if (p >= 53 && inj === 'std') {
+                addMsg('danger', 'เฮ้ยวัยรุ่น! ลูกโตหัวฉีดเดิม?', 
+                `ลูก ${p}mm หัวฉีดเดิมบางเจี๊ยบ! เดี๋ยวลูกติดนะ **เปลี่ยนเป็นหัวฉีด 6J / 6K** ด่วนๆ`,
+                'https://shopee.co.th/search?keyword=injector+6j+wave110i');
+            }
+            if (p >= 54 && ecu === 'std') {
+                addMsg('warn', 'รถแรงแต่กล่องตัด?', 
+                `ทำลูกมาเยอะ แต่กล่องตัด 8,500 รอบ เสียของ! **จัดกล่อง Remap** ปลดรอบวิ่งยาวๆ`,
+                'https://shopee.co.th/search?keyword=ecu+standalone+wave110i');
+            }
+            if (p >= 53 && ex === 'std') {
+                addMsg('warn', 'ท่ออั้น ระวังความร้อนขึ้น!', 
+                `ลูกโตไอเสียเยอะ ท่อเดิมระบายไม่ทัน **แนะนำท่อผ่าหมก (คอ 28mm)** วิ่งดีขึ้นผิดตา`,
+                'https://shopee.co.th/search?keyword=exhaust+wave110i+28mm');
+            }
+            if (speedInt > 140) {
+                addMsg('danger', 'ยางเดิมเอาไม่อยู่นะ!', 
+                `ความเร็ว ${speedInt} km/h ยางเดิมติดรถลื่นหัวแตก! **เปลี่ยนใส่ยางเกรดสนาม (IRC IZ-S / Pirelli)** เถอะครับ เพื่อชีวิตวัยรุ่น`,
+                'https://shopee.co.th/search?keyword=irc+iz-s+17');
+            }
+            if (p >= 59 && ecu === 'open' && inj === '8w') {
+                addMsg('info', 'สเปคนี้ตึงจัด! (Perfect Setup)', 
+                `ลูก 59 + กล่อง Open + หัวฉีด 8W.. นี่มันสูตรหลังถนนชัดๆ! **อย่าลืมไล่สเตอร์ยาวๆ** ไม่งั้นเกียร์หมดก่อน`,
+                '');
+            }
+        }
+
+        // --- 7. DYNO TEST ---
+        let speedChart, hpChart;
+        function toggleDyno() {
+            document.getElementById('dyno_section').style.display = 'block';
+            document.getElementById('dyno_section').scrollIntoView({ behavior: 'smooth' });
+            runDynoTest();
+        }
+
+        function runDynoTest() {
+            const maxSpeed = parseInt(document.getElementById('disp_speed').innerText);
+            let acc = (1200/maxSpeed).toFixed(1);
+            let hp = (maxSpeed/7.5).toFixed(1);
+
+            document.getElementById('dyno_max_speed').innerText = maxSpeed;
+            document.getElementById('dyno_0_100').innerText = acc;
+            document.getElementById('dyno_peak_hp').innerText = hp;
+
+            const ctx1 = document.getElementById('speedGraph').getContext('2d');
+            if(speedChart) speedChart.destroy();
+            speedChart = new Chart(ctx1, {
+                type: 'line',
+                data: {
+                    labels: [0,2,4,6,8,10,12,14],
+                    datasets: [{ label: 'Speed', data: [0, maxSpeed*0.4, maxSpeed*0.7, maxSpeed*0.85, maxSpeed*0.92, maxSpeed*0.97, maxSpeed, maxSpeed], borderColor: '#ff3333', backgroundColor: 'rgba(255,51,51,0.2)', fill:true }]
+                },
+                options: { responsive:true, plugins:{legend:{display:false}} }
+            });
+
+            const ctx2 = document.getElementById('hpGraph').getContext('2d');
+            if(hpChart) hpChart.destroy();
+            hpChart = new Chart(ctx2, {
+                type: 'line',
+                data: {
+                    labels: [2,4,6,8,9,10,11,12],
+                    datasets: [{ label: 'HP', data: [hp*0.3, hp*0.6, hp*0.8, hp*0.9, hp, hp*0.95, hp*0.8, hp*0.7], borderColor: '#ffaa00', backgroundColor: 'rgba(255,170,0,0.2)', fill:true }]
+                },
+                options: { responsive:true, plugins:{legend:{display:false}} }
+            });
+        }
+
+        window.addEventListener('load', () => {
+            document.getElementById('kimx-loader').style.display = 'none';
+            updateProductDisplay('cam_display_area', camData['std']);
+            updateProductDisplay('injector_display_area', injData['std']);
+            runCalculation();
+        });
+
+        // --- 8. ฟังก์ชันคำนวณสเปคแนะนำ (BLUEPRINT SYSTEM) ---
+        function updateTechnicalBlueprint(pistonSize, cc) {
+            let valveText = "เดิม (22/27)";
+            let throttleText = "เดิม (24mm)";
+            let sparkText = "เบอร์ 6 (CPR6EA)";
+            let ratioText = "2.50 - 2.60";
+            let ratioDesc = "ต้นจัด ปลายไหล";
+
+            // 1. คำนวณวาล์ว
+            if(pistonSize < 50) { valveText = "เดิมโรงงาน"; }
+            else if(pistonSize <= 53) { valveText = "26 / 22 (วาล์วโซ)"; }
+            else if(pistonSize <= 56) { valveText = "27 / 23 (ลูก 54-56)"; }
+            else if(pistonSize <= 58) { valveText = "28 / 24 หรือ 29/25"; }
+            else { valveText = "31 / 27 (4 วาล์ว)"; }
+
+            // 2. คำนวณเรือนลิ้นเร่ง
+            if(cc < 120) { throttleText = "26 mm (คว้าน)"; }
+            else if(cc < 140) { throttleText = "28 mm (ใบ 28)"; }
+            else if(cc < 160) { throttleText = "30 mm (ใบ 30)"; }
+            else if(cc < 190) { throttleText = "32 mm (เรือน CBR)"; }
+            else { throttleText = "34-36 mm"; }
+
+            // 3. คำนวณหัวเทียน
+            if(cc > 125) sparkText = "เบอร์ 7 (CPR7EA)";
+            if(cc > 150) sparkText = "เบอร์ 8 (CPR8EA)";
+            if(cc > 180) sparkText = "เบอร์ 9 (R-Racing)";
+
+            // 4. คำนวณสเตอร์ (Ratio)
+            // หาอัตราทดปัจจุบันก่อน
+            const f = parseFloat(document.getElementById('front').value);
+            const r = parseFloat(document.getElementById('rear').value);
+            const currentRatio = r/f;
+
+            if(cc < 125) { 
+                ratioText = "2.40 - 2.50"; ratioDesc = "เน้นใช้งาน (14-34/35)"; 
+            } else if(cc < 150) { // ลูก 53
+                ratioText = "2.10 - 2.30"; ratioDesc = "ดันโล (14-30/32)";
+            } else { // ลูกโต
+                ratioText = "1.90 - 2.10"; ratioDesc = "ท้ายลึก (14-28 หรือ 15-30)";
+            }
+
+            // แสดงผลลงหน้าจอ
+            document.getElementById('rec_valve').innerText = valveText;
+            document.getElementById('rec_throttle').innerText = throttleText;
+            document.getElementById('rec_spark').innerText = sparkText;
+            document.getElementById('rec_ratio').innerText = ratioText;
+            document.getElementById('rec_ratio_desc').innerText = ratioDesc;
+        }
+
+        // --- ฟังก์ชันคำนวณสถานะเครื่องยนต์ (ENGINE HEALTH LOGIC) ---
+        function updateEngineMonitor(p, cc, inj, ex_type) {
+            
+            // 1. วิเคราะห์ A/F Ratio (น้ำมัน vs CC)
+            let afStatus = 'good'; let afText = "สมบูรณ์ (Perfect)"; let afFill = 90;
+            // เช็คบาง
+            if ((cc > 125 && inj === 'std') || (cc > 145 && inj === '6j') || (cc > 165 && inj === '6k')) {
+                afStatus = 'bad'; afText = "อันตราย! บางจัด (Dangerously Lean)"; afFill = 20;
+            } 
+            // เช็คหนา
+            else if ((cc < 115 && inj === '6k') || (cc < 140 && inj === '8w')) {
+                afStatus = 'warn'; afText = "หนาเกินไป (Too Rich)"; afFill = 100;
+            }
+            // อัปเดต UI
+            updateMonitorCard('card_af', 'bar_af', 'text_af', 'val_af', afStatus, afText, afFill + '%');
+
+            // 2. วิเคราะห์ความร้อน (Thermal Stress from Piston size)
+            let tempStatus = 'good'; let tempText = "ปกติ (Normal)"; let tempFill = 30;
+            if (p >= 53 && p <= 55) {
+                tempStatus = 'warn'; tempText = "เริ่มสะสมความร้อน (Warm)"; tempFill = 60;
+            } else if (p >= 56) {
+                tempStatus = 'bad'; tempText = "ร้อนจัด! (Overheat Risk)"; tempFill = 95;
+            }
+            updateMonitorCard('card_temp', 'bar_temp', 'text_temp', 'val_temp', tempStatus, tempText, tempFill + '%');
+
+            // 3. วิเคราะห์การระบายไอเสีย (Flow vs Exhaust)
+            let flowStatus = 'good'; let flowText = "ไหลลื่น (Good Flow)"; let flowFill = 90;
+            if (p >= 53 && ex_type === 'std') {
+                flowStatus = 'bad'; flowText = "ท่ออั้น! (Choked)"; flowFill = 30;
+            } else if (p >= 57 && ex_type === 'mok') {
+                flowStatus = 'warn'; flowText = "เริ่มอั้น (Restricted)"; flowFill = 60;
+            }
+            updateMonitorCard('card_flow', 'bar_flow', 'text_flow', 'val_flow', flowStatus, flowText, flowFill + '%');
+        }
+
+        function updateMonitorCard(cardId, barId, textId, valId, status, text, fill) {
+            const card = document.getElementById(cardId);
+            const bar = document.getElementById(barId);
+            const txt = document.getElementById(textId);
+            const val = document.getElementById(valId);
+
+            // Reset Classes
+            card.classList.remove('status-good', 'status-warn', 'status-bad');
+            
+            // Add New Class
+            card.classList.add('status-' + status);
+            bar.style.width = fill;
+            txt.innerText = text;
+            val.innerText = fill;
+        }
+    </script>
+</body>
+</html>

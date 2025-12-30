@@ -1,0 +1,84 @@
+/* --- ปุ่ม Support (แบบใหม่) --- */
+        .support-btn {
+            margin-top: 60px;
+            background: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            padding: 10px 30px;
+            border-radius: 50px;
+            font-family: 'Kanit', sans-serif;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex; align-items: center; gap: 8px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        .support-btn:hover {
+            background: var(--primary);
+            color: #000;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+        }
+
+        /* --- หน้าต่าง Popup (Modal) --- */
+        .modal-overlay {
+            display: none; /* ซ่อนไว้ก่อน */
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9);
+            backdrop-filter: blur(8px);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        
+        /* กล่องเนื้อหาใน Popup */
+        .modal-content {
+            animation: zoomIn 0.3s ease;
+            position: relative;
+            background: linear-gradient(45deg, #333, #FFD700, #333);
+            padding: 2px; border-radius: 20px;
+            width: 320px;
+        }
+        @keyframes zoomIn { from {transform: scale(0.8); opacity: 0;} to {transform: scale(1); opacity: 1;} }
+
+        .support-inner { background: #0f0f0f; border-radius: 18px; padding: 30px 20px; text-align: center; }
+        .support-header { color: #888; font-size: 0.8rem; letter-spacing: 3px; margin-bottom: 20px; display: flex; justify-content: center; gap: 8px; }
+        .support-header i { color: #FFD700; animation: pulse 2s infinite; }
+        .qr-frame { background: #fff; padding: 10px; border-radius: 15px; display: inline-block; margin-bottom: 15px; }
+        .qr-img { width: 160px; height: auto; display: block; }
+        .pp-number { font-size: 1.6rem; font-weight: 800; color: #FFD700; font-family: 'Courier New', monospace; text-shadow: 0 0 15px rgba(255, 215, 0, 0.4); margin: 5px 0; letter-spacing: 1px; }
+        
+        .close-text {
+            margin-top: 20px; color: #666; cursor: pointer; font-size: 0.8rem; text-decoration: underline; transition: 0.3s;
+        }
+        .close-text:hover { color: #fff; }
+
+        /* --- เพิ่มปุ่ม Facebook & Sponsor --- */
+        .fb-btn {
+            display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+            background: #1877F2; color: #fff;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 50px;
+            margin-top: 15px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            transition: 0.3s;
+            box-shadow: 0 5px 15px rgba(24, 119, 242, 0.3);
+            width: 80%; /* ความกว้างปุ่ม */
+        }
+        .fb-btn:hover {
+            background: #166fe5;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(24, 119, 242, 0.5);
+        }
+        
+        .sponsor-text {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            font-size: 0.8rem;
+            color: #888;
+        }
+        .sponsor-highlight { color: #FFD700; font-weight: bold; cursor: pointer; }

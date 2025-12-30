@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>KIMX RACER GPS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { 
+            --bg: #050505; 
+            --card-bg: rgba(20, 20, 20, 0.9); 
+            --primary: #00ff66; 
+            --danger: #ff003c;
+            --text: #ffffff; 
+        }
+        
+        body {
+            font-family: 'Kanit', sans-serif; 
+            background-color: var(--bg); 
+            color: var(--text); 
+            margin: 0; padding: 0;
+            background-image: radial-gradient(circle at 50% 0%, rgba(0, 255, 102, 0.1) 0%, transparent 60%);
+            min-height: 100vh; 
+            display: flex; flex-direction: column; align-items: center;
+            overflow-x: hidden;
+            padding-bottom: 80px;
+            user-select: none;
+        }
+
+        /* --- LOADING SCREEN (NEW!) --- */
+        #loadingOverlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; z-index: 10000;
+            display: none; /* ซ่อนไว้ก่อน */
+            flex-direction: column; justify-content: center; align-items: center;
+        }
+        .kimx-loader {
+            font-size: 4rem; font-weight: 900; color: var(--primary);
+            text-transform: uppercase; letter-spacing: 2px;
+            text-shadow: 0 0 20px rgba(0, 255, 102, 0.8);
+            animation: pulseGreen 1s infinite alternate;
+        }
+        .loader-text {
+            margin-top: 15px; color: #666; font-size: 0.8rem; letter-spacing: 1px;
+            animation: blink 1s infinite;
+        }
+
+        /* --- START OVERLAY --- */
+        #startOverlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95); z-index: 9999;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+        }
+        .start-btn {
+            background: var(--primary); color: #000; border: none;
+            padding: 20px 40px; border-radius: 50px; font-size: 1.5rem; font-weight: 900;
+            cursor: pointer; box-shadow: 0 0 30px rgba(0, 255, 102, 0.6);
+            animation: pulse 1.5s infinite;
+        }
+
+        /* --- NAV --- */
+        .top-nav {
+            position: fixed; top: 15px; z-index: 1000;
+            display: flex; gap: 10px; 
+            background: rgba(0,0,0,0.8); padding: 5px 15px; border-radius: 50px; 
+            border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(10px);
+        }
+        .nav-item { text-decoration: none; color: #888; font-size: 0.8rem; display: flex; align-items: center; gap: 5px;}
+        .nav-item.active { color: var(--primary); font-weight: bold; }
+
+        /* --- GAUGE --- */
+        .gauge-container {
+            position: relative; width: 300px; height: 300px; margin-top: 80px;
+            display: flex; justify-content: center; align-items: center;
+        }
+        .gauge-ring { transform: rotate(-90deg); transform-origin: 50% 50%; }
+        .speed-val { 
+            position: absolute; font-size: 6rem; font-weight: 900; 
+            background: -webkit-linear-gradient(#fff, #bbb); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 15px rgba(0,255,102,0.3));
+        }
+        .speed-unit { position: absolute; top: 70%; font-size: 1rem; color: var(--primary); letter-spacing: 3px; font-weight: bold; }
+
+        /* --- TIMER --- */
+        .drag-timer-box {
+            margin-top: 0px; margin-bottom: 20px;
+            background: rgba(255,255,255,0.05); padding: 10px 30px;
+            border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);
+            text-align: center;
+        }
+        .drag-val { font-size: 1.8rem; font-weight: 700; color: #fff; font-family: monospace;}
+        .drag-active { color: var(--primary); animation: blink 0.5s infinite; }
+
+        /* --- STATS --- */
+        .stats-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 90%; max-width: 400px; }
+        .stat-card { background: var(--card-bg); border: 1px solid rgba(255,255,255,0.1); padding: 15px; border-radius: 16px; text-align: center; }
+        .stat-val { font-size: 1.5rem; font-weight: 800; color: #fff; }
+        .stat-label { font-size: 0.7rem; color: #666; margin-top: 5px; }
+
+        /* --- LEADERBOARD --- */
+        .leaderboard-section {
+            width: 90%; max-width: 400px; margin-top: 30px;
+            background: rgba(255,255,255,0.03); padding: 20px; border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .rank-item {
+            display: flex; justify-content: space-between; align-items: center;
+            background: #111; padding: 10px 15px; border-radius: 10px; margin-bottom: 8px;
+            border-left: 3px solid #333;
+        }
+        .rank-item.top-1 { border-left-color: gold; background: linear-gradient(90deg, rgba(255,215,0,0.1), #111); }
+        .rank-item.is-me { border: 1px solid var(--primary); background: rgba(0,255,102,0.05); }
+
+        /* --- STATUS --- */
+        .gps-status { margin-top: 10px; font-size: 0.8rem; color: #666; display: flex; gap: 5px; align-items: center;}
+        .status-dot { width: 8px; height: 8px; background: #333; border-radius: 50%; }
+        .status-dot.active { background: var(--primary); box-shadow: 0 0 5px var(--primary); }
+
+        @media (max-width: 480px) {
+            .gauge-container { transform: scale(0.9); margin-top: 60px; }
+            .speed-val { font-size: 5rem; }
+            .kimx-loader { font-size: 3rem; }
+        }
+
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        @keyframes blink { 50% { opacity: 0.5; } }
+        @keyframes pulseGreen { 
+            0% { opacity: 0.5; transform: scale(0.95); text-shadow: 0 0 10px var(--primary); } 
+            100% { opacity: 1; transform: scale(1.05); text-shadow: 0 0 30px var(--primary); } 
+        }
+    </style>
+</head>
+<body>
+
+    <div id="loadingOverlay">
+        <div class="kimx-loader">KIMX</div>
+        <div class="loader-text">SEARCHING FOR SATELLITE...</div>
+    </div>
+
+    <div id="startOverlay">
+        <i class="fas fa-motorcycle" style="font-size: 3rem; color: #fff; margin-bottom: 20px;"></i>
+        <div style="margin-bottom: 30px; color: #aaa;">KIMX ENGINE LAB</div>
+        <button class="start-btn" onclick="initApp()">START ENGINE</button>
+        <div style="margin-top: 20px; font-size: 0.8rem; color: #555;">*กรุณาเปิด GPS และใช้งานกลางแจ้ง</div>
+    </div>
+
+    <div class="top-nav">
+        <a href="index.html" class="nav-item"><i class="fas fa-chevron-left"></i> HOME</a>
+        <div class="nav-item active">RACE MODE</div>
+    </div>
+
+    <div class="gauge-container">
+        <svg width="300" height="300" class="gauge-ring">
+            <circle cx="150" cy="150" r="135" stroke="#222" stroke-width="15" fill="none"></circle>
+            <circle id="speedRing" cx="150" cy="150" r="135" stroke="#00ff66" stroke-width="15" fill="none"
+                    stroke-dasharray="848" stroke-dashoffset="848" stroke-linecap="round" style="transition: stroke-dashoffset 0.3s;"></circle>
+        </svg>
+        <div class="speed-val" id="speedDisplay">0</div>
+        <div class="speed-unit">KM/H</div>
+    </div>
+
+    <div class="drag-timer-box">
+        <div style="font-size: 0.6rem; color: #888; letter-spacing: 1px; margin-bottom: 5px;">0 - 100 TEST</div>
+        <div class="drag-val" id="dragTimer">0.00s</div>
+    </div>
+
+    <div class="gps-status">
+        <div class="status-dot" id="statusDot"></div>
+        <span id="statusText">System Standby</span>
+    </div>
+
+    <div class="stats-container">
+        <div class="stat-card">
+            <div class="stat-val" id="maxSpeed" style="color: var(--primary);">0</div>
+            <div class="stat-label">TOP SPEED</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-val" id="accuracy" style="color: #888;">-</div>
+            <div class="stat-label">ACCURACY</div>
+        </div>
+    </div>
+
+    <div class="leaderboard-section">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+            <div style="font-weight: bold;"><i class="fas fa-trophy" style="color: gold;"></i> RANKING</div>
+            <div style="font-size: 0.7rem; color: #666;">Top Speed</div>
+        </div>
+        <div id="leaderboardList"></div>
+        <div style="margin-top: 20px; text-align: center; display: flex; gap: 10px; justify-content: center;">
+            <button onclick="changeName()" style="background: #333; color: #fff; border: 1px solid #555; padding: 5px 15px; border-radius: 20px; font-size: 0.8rem;">เปลี่ยนชื่อ</button>
+            <button onclick="resetData()" style="background: #333; color: #fff; border: 1px solid #555; padding: 5px 15px; border-radius: 20px; font-size: 0.8rem;">รีเซ็ต</button>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. CONFIG ---
+        let maxSpd = parseFloat(localStorage.getItem('myMaxSpeed')) || 0;
+        let myName = localStorage.getItem('myRacerName') || "YOU";
+        
+        let timerRunning = false;
+        let startTime = 0;
+        let timerInterval;
+        let timeResult = 0;
+        let isGpsLocked = false; // ตัวเช็คว่า GPS มาหรือยัง
+
+        const bots = [
+            { name: "Benz_Turbo", speed: 168 },
+            { name: "Jacky_PCX", speed: 155 },
+            { name: "KIMX_Tuner", speed: 142 }
+        ];
+
+        // UI Refs
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const startOverlay = document.getElementById('startOverlay');
+        const speedDisplay = document.getElementById('speedDisplay');
+        const maxDisplay = document.getElementById('maxSpeed');
+        const accDisplay = document.getElementById('accuracy');
+        const speedRing = document.getElementById('speedRing');
+        const statusText = document.getElementById('statusText');
+        const statusDot = document.getElementById('statusDot');
+        const dragTimerDisplay = document.getElementById('dragTimer');
+        const leaderboardList = document.getElementById('leaderboardList');
+
+        // Init
+        maxDisplay.innerText = maxSpd;
+        renderLeaderboard();
+
+        // --- 2. MAIN FUNCTIONS ---
+
+        function initApp() {
+            // 1. ซ่อนหน้า Start
+            startOverlay.style.display = 'none';
+            // 2. โชว์หน้า Loading (KIMX เขียวๆ)
+            loadingOverlay.style.display = 'flex';
+            
+            // 3. เริ่มขอ GPS
+            startGPS();
+        }
+
+        function startGPS() {
+            if (navigator.geolocation) {
+                navigator.geolocation.watchPosition(
+                    (position) => {
+                        // --- GPS มาแล้ว! ---
+                        
+                        // ถ้าเป็นการจับสัญญาณครั้งแรก ให้ปิดหน้า Loading
+                        if (!isGpsLocked) {
+                            isGpsLocked = true;
+                            loadingOverlay.style.display = 'none'; // ซ่อนหน้าโหลด
+                        }
+
+                        // คำนวณความเร็ว
+                        let speed = position.coords.speed; 
+                        let acc = position.coords.accuracy;
+
+                        if (speed === null || speed < 0) speed = 0;
+                        let kmh = (speed * 3.6).toFixed(0);
+                        let currentSpd = parseFloat(kmh);
+
+                        // Update UI
+                        speedDisplay.innerText = kmh;
+                        accDisplay.innerText = "±" + acc.toFixed(0) + "m";
+                        updateRing(currentSpd);
+                        runDragTimer(currentSpd);
+
+                        statusText.innerText = "GPS Connected";
+                        statusText.style.color = "#00ff66";
+                        statusDot.classList.add('active');
+
+                        // Update Record
+                        if (currentSpd > maxSpd) {
+                            maxSpd = currentSpd;
+                            maxDisplay.innerText = maxSpd;
+                            localStorage.setItem('myMaxSpeed', maxSpd);
+                            renderLeaderboard();
+                        }
+                    },
+                    (error) => {
+                        console.warn("GPS Error:", error);
+                        // ถ้า Error ให้ปิดหน้าโหลด แล้วกลับไปหน้า Start เพื่อให้กดใหม่
+                        if(!isGpsLocked) {
+                            alert("หาสัญญาณไม่เจอ หรือไม่อนุญาต GPS");
+                            loadingOverlay.style.display = 'none';
+                            startOverlay.style.display = 'flex';
+                        }
+                    },
+                    { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 }
+                );
+            } else {
+                alert("อุปกรณ์นี้ไม่รองรับ GPS");
+                loadingOverlay.style.display = 'none';
+                startOverlay.style.display = 'flex';
+            }
+        }
+
+        // --- 3. HELPER LOGIC ---
+
+        function updateRing(speed) {
+            const maxGauge = 180; 
+            const circumference = 848; 
+            let percent = speed / maxGauge;
+            if (percent > 1) percent = 1;
+            const offset = circumference - (percent * circumference);
+            
+            speedRing.style.strokeDashoffset = offset;
+            speedRing.style.stroke = (speed > 120) ? "#ff003c" : "#00ff66";
+        }
+
+        function runDragTimer(spd) {
+            if (!timerRunning && spd > 2 && spd < 100 && timeResult === 0) {
+                timerRunning = true;
+                startTime = Date.now();
+                dragTimerDisplay.classList.add('drag-active');
+                timerInterval = setInterval(() => {
+                    let t = (Date.now() - startTime) / 1000;
+                    dragTimerDisplay.innerText = t.toFixed(2) + "s";
+                }, 50);
+            } else if (timerRunning && spd >= 100) {
+                timerRunning = false;
+                clearInterval(timerInterval);
+                dragTimerDisplay.classList.remove('drag-active');
+                dragTimerDisplay.style.color = "#00ff66";
+                timeResult = ((Date.now() - startTime) / 1000).toFixed(2);
+                dragTimerDisplay.innerText = timeResult + "s";
+            }
+        }
+
+        function renderLeaderboard() {
+            let list = [...bots];
+            list.push({ name: myName, speed: maxSpd, isMe: true });
+            list.sort((a,b) => b.speed - a.speed);
+
+            leaderboardList.innerHTML = "";
+            list.slice(0, 5).forEach((p, i) => {
+                let cls = "";
+                if(i===0) cls="top-1";
+                if(p.isMe) cls+=" is-me";
+                
+                leaderboardList.innerHTML += `
+                    <div class="rank-item ${cls}">
+                        <div style="display:flex; gap:10px;">
+                            <span style="width:15px; font-weight:bold; color:#666;">${i+1}</span>
+                            <span style="color:${p.isMe ? '#00ff66' : '#eee'}">${p.name}</span>
+                        </div>
+                        <span style="font-weight:800; color:#fff;">${p.speed} <span style="font-size:0.7rem; font-weight:normal;">km/h</span></span>
+                    </div>
+                `;
+            });
+        }
+
+        function changeName() {
+            let n = prompt("Enter your Name:", myName);
+            if(n) { myName = n; localStorage.setItem('myRacerName', n); renderLeaderboard(); }
+        }
+
+        function resetData() {
+            if(confirm("Reset Records?")) {
+                maxSpd = 0; localStorage.setItem('myMaxSpeed', 0);
+                maxDisplay.innerText = "0";
+                clearInterval(timerInterval); timerRunning=false; timeResult=0;
+                dragTimerDisplay.innerText = "0.00s"; dragTimerDisplay.style.color="#fff"; dragTimerDisplay.classList.remove('drag-active');
+                renderLeaderboard();
+            }
+        }
+    </script>
+</body>
+</html>

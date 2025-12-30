@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="google-site-verification" content="kuysdOGiU-OhgKk5VzJ5uwmOVQTXzxfPzKzuzkLoFSw" />
+    <title>คำนวณความเร็ว & เช็คแรงม้า AI - KIMX TUNER (Wave 125i / 110i / PCX)</title>
+    
+    <meta name="description" content="เว็บคำนวณความเร็วและแรงม้ารถมอเตอร์ไซค์ออนไลน์ฟรี! เช็คความเร็ว GPS, คำนวณ CC, สูตรไล่สเตอร์ Wave 125i, 110i และ PCX 160 แม่นยำด้วยระบบ AI อัจฉริยะ">
+    <meta name="keywords" content="คำนวณอัตราสิ้นเปลือง, คำนวณค่าน้ำมัน, คำนวณแรงม้า, เช็คความเร็วรถ, Wave 125i, PCX 160, KIMX TUNER">
+    <meta name="author" content="KIMX TUNER AI">
+    <meta name="robots" content="index, follow"> 
+    <meta property="og:title" content="KIMX TUNER AI - คำนวณความเร็ว & แรงม้ามอเตอร์ไซค์">
+    <meta property="og:description" content="อยากรู้ว่ารถวิ่งได้เท่าไหร่? มาลองคำนวณสูตรไล่รถด้วย AI แม่นยำ รู้ผลทันที ฟรี!">
+    <meta property="og:image" content="kimxlogo.png"> 
+    <meta property="og:url" content="https://www.kimxtuner-ai.site"> 
+    <meta property="og:type" content="website">
+
+    <link rel="icon" href="kimxlogo.png" type="image/png">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* --- KIMX MAIN THEME --- */
+        :root {
+            --bg: #050505;
+            --primary: #FFD700;
+            --text: #ffffff;
+            --pcx-blue: #00eaff;
+            --wave110-red: #ff3333;
+            --eco-green: #00ff66;
+            --gps-purple: #d500f9;
+        }
+
+        body {
+            font-family: 'Kanit', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            background-image: linear-gradient(rgba(0,0,0,0.94), rgba(0,0,0,0.94)), url('https://www.transparenttextures.com/patterns/carbon-fibre.png');
+            background-attachment: fixed;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 60px 20px 40px;
+            text-align: center;
+            min-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .header-box { margin-bottom: 30px; animation: fadeInDown 0.8s ease-out; }
+        h1 {
+            margin: 0; 
+            font-size: 3.5rem; 
+            line-height: 1.1;
+            text-transform: uppercase; 
+            font-weight: 900; 
+            letter-spacing: -1px;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+            animation: logoPulse 2.5s infinite ease-in-out; 
+        }
+        .sub-text { font-size: 1.2rem; color: #888; margin-top: 15px; letter-spacing: 1px; font-weight: 400; }
+        .intro-text {
+            color: #ccc; font-size: 1.1rem; line-height: 1.6; margin-bottom: 50px;
+            max-width: 650px; margin-left: auto; margin-right: auto;
+            animation: fadeIn 1s ease-out 0.3s both;
+        }
+
+        /* ปุ่มเลือกเมนู */
+        .btn-container {
+            display: flex; flex-direction: column; gap: 20px;
+            width: 100%; max-width: 550px; margin: 0 auto 60px;
+            animation: fadeInUp 0.8s ease-out 0.5s both;
+        }
+        .main-btn {
+            text-decoration: none; padding: 20px 25px; border-radius: 15px;
+            display: flex; align-items: center; justify-content: space-between;
+            transition: 0.3s; border: 1px solid rgba(255,255,255,0.1);
+            position: relative; overflow: hidden;
+            background: linear-gradient(45deg, #111, #1a1a1a);
+        }
+        .btn-content { text-align: left; }
+        .btn-title { 
+            font-size: 1.6rem; font-weight: 900; text-transform: uppercase; 
+            display: flex; align-items: center; gap: 10px; line-height: 1;
+        }
+        .year-badge { font-size: 0.9rem; font-weight: 800; padding: 2px 8px; border-radius: 4px; letter-spacing: 1px; }
+        .btn-sub { font-size: 0.9rem; color: #888; margin-top: 8px; font-weight: 400; }
+        .btn-icon-big { font-size: 2.5rem; opacity: 0.5; transition: 0.3s; }
+
+        /* สไตล์ปุ่ม WAVE 125i */
+        .wave-btn { border-left: 5px solid var(--primary); }
+        .wave-btn .btn-title { color: #fff; }
+        .wave-btn .year-badge { color: var(--primary); background: rgba(255, 215, 0, 0.1); border: 1px solid var(--primary); }
+        .wave-btn:hover { background: rgba(255, 215, 0, 0.05); box-shadow: 0 0 30px rgba(255, 215, 0, 0.2); transform: translateY(-5px); border-color: var(--primary); }
+        .wave-btn:hover .btn-icon-big { color: var(--primary); opacity: 1; transform: scale(1.1) rotate(-10deg); }
+
+        /* สไตล์ปุ่ม WAVE 110i */
+        .wave110-btn { border-left: 5px solid var(--wave110-red); }
+        .wave110-btn .btn-title { color: #fff; }
+        .wave110-btn .year-badge { color: var(--wave110-red); background: rgba(255, 51, 51, 0.1); border: 1px solid var(--wave110-red); }
+        .wave110-btn:hover { background: rgba(255, 51, 51, 0.05); box-shadow: 0 0 30px rgba(255, 51, 51, 0.2); transform: translateY(-5px); border-color: var(--wave110-red); }
+        .wave110-btn:hover .btn-icon-big { color: var(--wave110-red); opacity: 1; transform: scale(1.1) rotate(-10deg); }
+
+        /* สไตล์ปุ่ม PCX 160 */
+        .pcx-btn { border-left: 5px solid var(--pcx-blue); }
+        .pcx-btn .btn-title { color: #fff; }
+        .pcx-btn .year-badge { color: var(--pcx-blue); background: rgba(0, 234, 255, 0.1); border: 1px solid var(--pcx-blue); }
+        .pcx-btn:hover { background: rgba(0, 234, 255, 0.05); box-shadow: 0 0 30px rgba(0, 234, 255, 0.2); transform: translateY(-5px); border-color: var(--pcx-blue); }
+        .pcx-btn:hover .btn-icon-big { color: var(--pcx-blue); opacity: 1; transform: scale(1.1) rotate(-10deg); }
+
+        /* สไตล์ปุ่ม FUEL ECO */
+        .fuel-btn { border-left: 5px solid var(--eco-green); }
+        .fuel-btn .btn-title { color: #fff; }
+        .fuel-btn .year-badge { 
+            color: var(--eco-green); background: rgba(0, 255, 102, 0.1); border: 1px solid var(--eco-green); 
+            animation: glowPulse 2s infinite; 
+        }
+        .fuel-btn:hover { 
+            background: rgba(0, 255, 102, 0.05); 
+            box-shadow: 0 0 30px rgba(0, 255, 102, 0.2); 
+            transform: translateY(-5px); border-color: var(--eco-green); 
+        }
+        .fuel-btn:hover .btn-icon-big { color: var(--eco-green); opacity: 1; transform: scale(1.1) rotate(-10deg); }
+
+        /* 🔥 สไตล์ปุ่ม GPS (ลบ Animation ออกแล้ว) */
+        .gps-btn { border-left: 5px solid var(--gps-purple); }
+        .gps-btn .btn-title { color: #fff; }
+        .gps-btn .year-badge { 
+            color: #fff; background: var(--gps-purple); border: 1px solid var(--gps-purple);
+            /* animation: signalPulse 1.5s infinite; เอาออกแล้วตามที่ขอ */
+            box-shadow: 0 0 10px var(--gps-purple);
+        }
+        .gps-btn:hover { 
+            background: rgba(213, 0, 249, 0.05); 
+            box-shadow: 0 0 30px rgba(213, 0, 249, 0.2); 
+            transform: translateY(-5px); border-color: var(--gps-purple); 
+        }
+        .gps-btn:hover .btn-icon-big { color: var(--gps-purple); opacity: 1; transform: scale(1.1) rotate(10deg); }
+
+        /* ANIMATIONS */
+        @keyframes glowPulse { 0% { opacity: 0.7; } 50% { opacity: 1; box-shadow: 0 0 10px rgba(0,255,102,0.3); } 100% { opacity: 0.7; } }
+        /* @keyframes signalPulse { ... (ไม่ได้ใช้แล้ว) ... } */
+
+        /* Section Styles */
+        .section-container { max-width: 800px; margin: 0 auto; padding: 0 20px; }
+        .section { padding: 60px 0; border-top: 1px solid #222; text-align: center; }
+        .section-title {
+            color: var(--primary); font-size: 2rem; font-weight: 800; margin-bottom: 40px;
+            text-transform: uppercase; text-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+            position: relative; display: inline-block;
+        }
+        .section-title::after {
+            content: ''; display: block; width: 60%; height: 3px; 
+            background: var(--primary); margin: 10px auto 0; border-radius: 2px;
+        }
+        .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 30px; margin-top: 30px; text-align: center; }
+        .feature-box {
+            background: rgba(20, 20, 20, 0.6); border: 1px solid #333; border-radius: 20px;
+            padding: 30px 20px; transition: 0.3s; backdrop-filter: blur(5px); height: 100%;
+        }
+        .feature-box:hover {
+            border-color: var(--primary); box-shadow: 0 10px 30px rgba(255, 215, 0, 0.15);
+            transform: translateY(-8px); background: rgba(30, 30, 30, 0.8);
+        }
+        .feature-icon { font-size: 3.5rem; color: var(--primary); margin-bottom: 25px; display: inline-block; text-shadow: 0 0 20px rgba(255, 215, 0, 0.3); }
+        .feature-title { font-size: 1.3rem; font-weight: 800; color: #fff; margin-bottom: 15px; }
+        .feature-desc { color: #aaa; font-size: 1rem; line-height: 1.5; }
+        
+        .step-box { padding: 20px; position: relative; }
+        .step-number {
+            background: linear-gradient(45deg, var(--primary), #FFA500);
+            color: #000; width: 60px; height: 60px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 900; font-size: 1.8rem; margin: 0 auto 25px;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5); border: 3px solid #000;
+        }
+
+        /* Partner */
+        .partner-section {
+            margin-top: 60px; padding: 25px 20px;
+            background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
+            border: 1px dashed var(--primary); border-radius: 15px;
+            text-align: center; position: relative;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+        }
+        .partner-badge {
+            position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
+            background: linear-gradient(45deg, #FFD700, #FFC107);
+            color: #000; font-weight: 800; font-size: 0.9rem; padding: 4px 18px;
+            border-radius: 25px; border: 3px solid #111;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+            white-space: nowrap; z-index: 10;
+            animation: goldPulse 2s infinite ease-in-out;
+        }
+        .partner-content { display: flex; flex-direction: column; gap: 8px; margin-top: 25px; align-items: center; }
+        .partner-title { font-size: 1.2rem; color: #fff; font-weight: 900; text-transform: uppercase; }
+        .partner-desc { color: #ccc; font-size: 0.95rem; line-height: 1.5; max-width: 600px; }
+        .fb-btn {
+            margin-top: 10px; background: linear-gradient(to right, #0064e0, #1877F2);
+            color: #fff; padding: 10px 25px; border-radius: 50px; text-decoration: none;
+            font-weight: 700; font-size: 1rem; display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; border: 1px solid rgba(255,255,255,0.2);
+        }
+        .fb-btn:hover { background: #2D8EFF; transform: translateY(-2px); box-shadow: 0 4px 15px rgba(24, 119, 242, 0.4); }
+
+        /* CTA */
+        .cta-section {
+            background: radial-gradient(circle at top right, rgba(255,215,0,0.15) 0%, rgba(0,0,0,1) 70%);
+            padding: 50px 30px; border-radius: 25px; border: 1px solid var(--primary);
+            margin: 60px auto; max-width: 700px; box-shadow: 0 15px 40px rgba(255, 215, 0, 0.1); text-align: center;
+        }
+        .cta-title { color: #fff; font-size: 2.2rem; font-weight: 900; margin-bottom: 15px; text-transform: uppercase; }
+        .cta-sub { color: #ccc; margin-bottom: 35px; font-size: 1.1rem; }
+        .cta-btn {
+            background: var(--primary); color: #000; padding: 15px 40px; border-radius: 50px;
+            font-weight: 900; text-decoration: none; font-size: 1.2rem; display: inline-flex;
+            align-items: center; gap: 10px; transition: 0.3s; box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+        }
+        .cta-btn:hover { transform: scale(1.05); box-shadow: 0 0 40px rgba(255, 215, 0, 0.8); }
+        
+        .footer {
+            text-align: center; padding: 50px 0; color: #666; font-size: 0.9rem;
+            border-top: 1px solid #222; margin-top: 60px; background: rgba(0,0,0,0.8);
+        }
+        .footer-logo {
+            color: var(--primary); font-weight: 900; font-size: 1.8rem; margin-bottom: 20px;
+            display: inline-block; text-shadow: 0 0 15px rgba(255, 215, 0, 0.3); letter-spacing: 1px;
+        }
+
+        /* Animations */
+        @keyframes fadeInDown { from { opacity:0; transform: translateY(-30px); } to { opacity:1; transform: translateY(0); } }
+        @keyframes fadeInUp { from { opacity:0; transform: translateY(30px); } to { opacity:1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+        @keyframes goldPulse { 0% { transform: translateX(-50%) scale(1); box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.7); } 50% { transform: translateX(-50%) scale(1.05); box-shadow: 0 0 0 10px rgba(255, 215, 0, 0); } 100% { transform: translateX(-50%) scale(1); box-shadow: 0 0 0 0 rgba(255, 215, 0, 0); } }
+        @keyframes logoPulse { 
+            0% { opacity: 1; text-shadow: 0 0 20px rgba(255, 215, 0, 0.4); transform: scale(1); }
+            50% { opacity: 0.85; text-shadow: 0 0 40px rgba(255, 215, 0, 0.8), 0 0 10px rgba(255, 255, 255, 0.5); transform: scale(1.02); }
+            100% { opacity: 1; text-shadow: 0 0 20px rgba(255, 215, 0, 0.4); transform: scale(1); }
+        }
+
+        /* --- MOBILE OPTIMIZATION --- */
+        @media (max-width: 600px) {
+            .container { padding: 40px 15px 30px; }
+            h1 { font-size: 2.4rem; }
+            .sub-text { font-size: 0.95rem; margin-top: 10px; }
+            .intro-text { font-size: 0.95rem; margin-bottom: 30px; }
+            
+            .btn-container { gap: 12px; margin-bottom: 40px; }
+            .main-btn { padding: 15px 18px; min-height: auto; border-radius: 12px; }
+            .btn-title { font-size: 1.2rem; flex-direction: column; align-items: flex-start; gap: 3px; }
+            .year-badge { font-size: 0.7rem; padding: 2px 6px; margin-top: 2px; display: inline-block; }
+            .btn-sub { font-size: 0.75rem; margin-top: 4px; opacity: 0.8; }
+            .btn-icon-big { font-size: 2rem; }
+
+            .section { padding: 40px 0; }
+            .section-title { font-size: 1.6rem; margin-bottom: 25px; }
+            .grid-3 { grid-template-columns: 1fr; gap: 15px; margin-top: 20px; }
+            .feature-box { padding: 20px; }
+            
+            .partner-section { margin-top: 30px; padding: 25px 15px; }
+            .cta-section { padding: 30px 20px; margin: 40px 0; border-radius: 20px; }
+            .cta-title { font-size: 1.6rem; }
+            .cta-btn { width: 100%; justify-content: center; padding: 12px; font-size: 1rem; }
+            .footer { padding: 30px 0; }
+            .footer-logo { font-size: 1.4rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header-box">
+            <h1>KIMX TUNER <span style="color:var(--primary);">AI</span></h1>
+            <div class="sub-text">ระบบคำนวณและแนะนำการปรับแต่งรถจักรยานยนต์อัจฉริยะ</div>
+        </div>
+        
+        <p class="intro-text">
+            ปลดล็อคศักยภาพสูงสุดของรถคู่ใจด้วยเทคโนโลยี AI ที่แม่นยำ
+            เราช่วยวิเคราะห์และแนะนำสูตรการจูนให้แรง เร็ว และทนทาน
+        </p>
+
+        <div class="btn-container">
+            <a href="wave125i.html" class="main-btn wave-btn">
+                <div class="btn-content">
+                    <div class="btn-title">
+                        WAVE 125i 
+                        <span class="year-badge">LED 2023 - 2025</span>
+                    </div>
+                    <div class="btn-sub">4-SPEED / CHAIN DRIVE (คลิกเพื่อเริ่มจูน)</div>
+                </div>
+                <i class="fas fa-motorcycle btn-icon-big"></i>
+            </a>
+
+            <a href="wave110i.html" class="main-btn wave110-btn" style="border-color: #ffaa00;">
+                <div class="btn-content">
+                    <div class="btn-title">
+                        WAVE 110i 
+                        <span class="year-badge" style="background: #ffaa00; color: #000; border-color: #ffaa00;">
+                            COMING SOON
+                        </span>
+                    </div>
+                    <div class="btn-sub" style="color: #ffaa00; font-weight: bold;">
+                        <i class="fas fa-tools"></i> ยังไม่เสร็จดีน้า... ของแรงกำลังมา!
+                    </div>
+                </div>
+                <i class="fas fa-motorcycle btn-icon-big" style="opacity: 0.3;"></i>
+            </a>
+            
+            <a href="pcx160.html" class="main-btn pcx-btn">
+                <div class="btn-content">
+                    <div class="btn-title">
+                        PCX 160 
+                        <span class="year-badge">2021 - 2025</span>
+                    </div>
+                    <div class="btn-sub">eSP+ 4VALVE / CVT (คลิกเพื่อเริ่มจูน)</div>
+                </div>
+                <i class="fas fa-space-shuttle btn-icon-big"></i>
+            </a>
+
+            <a href="fuel.html" class="main-btn fuel-btn">
+                <div class="btn-content">
+                    <div class="btn-title">
+                        FUEL / ECO MODE
+                        <span class="year-badge">CALCULATOR</span>
+                    </div>
+                    <div class="btn-sub">คำนวณอัตราสิ้นเปลือง & ค่าน้ำมัน (กม./ลิตร)</div>
+                </div>
+                <i class="fas fa-gas-pump btn-icon-big"></i>
+            </a>
+
+            <a href="gps.html" class="main-btn gps-btn">
+                <div class="btn-content">
+                    <div class="btn-title">
+                        GPS TOPSPEED 
+                        <span class="year-badge">REAL-TIME</span>
+                    </div>
+                    <div class="btn-sub">วัดความเร็วผ่านดาวเทียม (Top Speed Record)</div>
+                </div>
+                <i class="fas fa-satellite-dish btn-icon-big"></i>
+            </a>
+        </div>
+    </div>
+
+    <div class="section-container">
+        <div class="section">
+            <h2 class="section-title">ทำไมต้อง KIMX TUNER AI?</h2>
+            <div class="grid-3">
+                <div class="feature-box">
+                    <i class="fas fa-brain feature-icon"></i>
+                    <h3 class="feature-title">AI อัจฉริยะ</h3>
+                    <p class="feature-desc">ประมวลผลสเปคเพื่อแนะนำสูตรการจูนที่เหมาะสมที่สุด</p>
+                </div>
+                <div class="feature-box">
+                    <i class="fas fa-cogs feature-icon"></i>
+                    <h3 class="feature-title">สูตรเฉพาะรุ่น</h3>
+                    <p class="feature-desc">อัลกอริทึมแยกสำหรับ Wave และ PCX เพื่อความแม่นยำ</p>
+                </div>
+                <div class="feature-box">
+                    <i class="fas fa-tachometer-alt feature-icon"></i>
+                    <h3 class="feature-title">รู้ผลทันที</h3>
+                    <p class="feature-desc">เห็นตัวเลขความเร็วและแรงม้า (HP) ที่คาดว่าจะได้ทันที</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section-container">
+        <div class="section" style="border-top: none;">
+            <h2 class="section-title">เริ่มต้นง่ายๆ ใน 3 ขั้นตอน</h2>
+            <div class="grid-3">
+                <div class="step-box">
+                    <div class="step-number">1</div>
+                    <h3 class="feature-title">เลือกรุ่นรถ</h3>
+                    <p class="feature-desc">เลือก Wave 125i, Wave 110i หรือ PCX 160 ด้านบน</p>
+                </div>
+                <div class="step-box">
+                    <div class="step-number">2</div>
+                    <h3 class="feature-title">กำหนดสเปค</h3>
+                    <p class="feature-desc">ใส่ข้อมูลอะไหล่ หรือเลือกใช้ "สูตรสำเร็จ"</p>
+                </div>
+                <div class="step-box">
+                    <div class="step-number">3</div>
+                    <h3 class="feature-title">รับคำแนะนำ</h3>
+                    <p class="feature-desc">AI จะประมวลผลและให้คำแนะนำทันที</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section-container">
+        <div class="cta-section">
+            <h2 class="cta-title">พร้อมที่จะ "สุดกราฟ" หรือยัง?</h2>
+            <p class="cta-sub">อย่าปล่อยให้รถของคุณวิ่งไม่เต็มประสิทธิภาพ มาเริ่มค้นหาสูตรลับความแรงกันเลย!</p>
+            <button onclick="window.scrollTo({top: 0, behavior: 'smooth'});" class="cta-btn">
+                <i class="fas fa-rocket"></i> เริ่มต้นใช้งานฟรี!
+            </button>
+        </div>
+    </div>
+
+    <div class="section-container">
+        <div class="partner-section">
+            <div class="partner-badge"><i class="fas fa-bullhorn"></i> พื้นที่โฆษณา (OPPORTUNITY)</div>
+            <div class="partner-content">
+                <div class="partner-title">🚀 อยากเพิ่มยอดขายอะไหล่แต่ง?</div>
+                <div class="partner-desc">
+                    ร่วมโปรโมทสินค้าของคุณกับเรา เจาะกลุ่มเป้าหมายสายซิ่งโดยตรง<br>
+                    การันตีผู้ใช้งานเว็บไซต์กว่า <strong style="color:#00ff66;">10,000+ คน/วัน!</strong>
+                </div>
+                <a href="https://www.facebook.com/chokhthwitantraklu?locale=th_TH" target="_blank" class="fb-btn">
+                    <i class="fab fa-facebook-messenger"></i> ติดต่อลงโฆษณา (Chat)
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <div class="section-container">
+            <div class="footer-logo">KIMX TUNER <span style="color:var(--primary);">AI</span></div>
+            <p>© 2024 KIMX TUNER AI. All Rights Reserved.<br>The Ultimate Motorcycle Tuning Platform.</p>
+        </div>
+    </div>
+
+</body>
+</html>
